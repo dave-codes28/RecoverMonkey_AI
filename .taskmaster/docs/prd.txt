@@ -1,0 +1,131 @@
+<context>
+# RecoverMonkey – PRD for TaskMaster AI
+Version: 1.0
+Owner: [Your Name]
+Start Date: [Set Date]
+Status: In Development
+Project Type: Shopify Recovery SaaS
+Frontend: Next.js (shadcn/ui, Tailwind, Typescript, built with V0.dev)
+Backend: Supabase
+Automation: Make.com → Brevo
+AI Assistants: Replit AI (Customer Chatbot), GPT (Shop Owner Assistant)
+
+# Overview
+RecoverMonkey is a Shopify abandoned cart recovery system that helps store owners improve conversions using a smart customer chatbot and a powerful shop dashboard. The app includes:
+- A customer-facing chatbot on the Shopify checkout page
+- A dashboard for store owners with stats, email editor, and AI assistant
+- A backend system using Supabase to store cart, customer, and email data
+- An automated email flow via Make.com and Brevo
+- An AI assistant for both the customer and the shop owner
+
+# Core Features
+1. Customer-Facing Chatbot (built separately in Replit)
+   - Lives on Shopify checkout via script embed
+   - Offers help or discount based on user intent
+   - Uses Replit AI to answer FAQs
+   - If cart is abandoned, triggers recovery
+   - Saves data (cart, actions, timing) into Supabase
+2. Supabase Backend
+   - Tables:
+     - customers – name, email, metadata
+     - carts – cart_id, items, status (pending/abandoned/recovered)
+     - emails – customer_id, template_used, sent_status
+     - email_templates – subject, body, created_by
+     - chat_logs – chatbot interactions
+     - store_settings – Shopify token, recovery preferences
+   - Triggers/Functions:
+     - On cart update → check abandonment condition
+     - On status change to abandoned → notify Make.com
+     - Log all email sends and chatbot responses
+3. Shop Owner Dashboard UI
+   - Built with V0.dev using shadcn/ui + Tailwind
+   - Pages:
+     - Dashboard Overview – stats and KPIs
+     - Carts Table – view and filter abandoned/recovered carts
+     - Email Editor – build and preview email templates
+     - AI Assistant – chatbot that answers store data questions
+     - Settings – Shopify connection, recovery timing
+4. Email Automation
+   - Supabase triggers → Make.com webhook
+   - Webhook includes customer data + email HTML
+   - Make.com → Brevo module sends recovery email
+   - Log email in Supabase with status
+5. Shop Owner AI Assistant
+   - Simple chatbot interface on the dashboard
+   - Uses same Supabase database
+   - Examples:
+     - "How many carts were recovered today?"
+     - "Send email to cart #2342"
+     - "List customers who clicked the link but didn't buy"
+   - Future plan: use OpenAI for deeper natural language parsing
+
+# User Experience
+- Chatbot visible during checkout
+- Store all abandoned cart data
+- Owner can edit email templates
+- Trigger emails after X mins
+- Show dashboard analytics
+- Owner chatbot responds with real data
+- Fast and clean UI
+- Mobile-responsive
+- Secure API connections
+- GPT/AI interaction logs stored for auditing
+
+<PRD>
+# Technical Architecture
+Layer | Tool/Tech
+--- | ---
+Database | Supabase (PostgreSQL)
+Frontend | Next.js + shadcn/ui + Tailwind + V0.dev
+Backend | Supabase Functions + Shopify Webhooks
+Email Sending | Make.com + Brevo
+AI | Replit AI (customer chatbot), GPT (owner assistant)
+File Manager | TaskMaster AI
+
+# Development Roadmap
+- UI Design Complete (V0)
+- Supabase Schema Finalized
+- Replit Chatbot MVP Ready
+- Email Flow Integration
+- Dashboard AI Bot Live
+- MVP Launch
+
+# Logical Dependency Chain
+- Foundation: Supabase schema, backend triggers
+- Next: Customer chatbot integration
+- Then: Dashboard UI and email editor
+- After: Email automation and analytics
+- Finally: AI assistant for shop owner
+
+# Risks and Mitigations
+- Technical challenges: Integration between Shopify, Supabase, and Make.com
+- MVP scoping: Focus on atomic, buildable features
+- Resource constraints: Prioritize core flows first
+
+# Appendix
+- File Structure (TaskMaster Suggested):
+/app
+  /dashboard
+  /email-editor
+  /carts
+  /assistant
+  /settings
+/components
+  /ui
+  /charts
+  /chatbot
+/lib
+  supabase.ts
+  api.ts
+  email.ts
+/backend
+  webhook.ts
+  supabase-functions.ts
+/shopify-embed
+  chatbot.tsx
+  style.css
+  deploy.sh
+/scripts
+  setup-db.sql
+  send-test-email.ts
+</PRD> 

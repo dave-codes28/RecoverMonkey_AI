@@ -1,0 +1,102 @@
+[
+  {
+    "id": 1,
+    "title": "Design UI and Project Structure",
+    "description": "Create the initial UI design and set up the project structure using Next.js, shadcn/ui, Tailwind, and V0.dev.",
+    "status": "todo",
+    "priority": "high",
+    "dependencies": [],
+    "details": "Set up folders for dashboard, email editor, carts, assistant, settings. Prepare global styles and theme.",
+    "testStrategy": "Verify folder structure and run the app with a basic landing page."
+  },
+  {
+    "id": 2,
+    "title": "Set Up Supabase Database Schema",
+    "description": "Create tables for customers, carts, emails, email_templates, chat_logs, and store_settings in Supabase.",
+    "status": "todo",
+    "priority": "high",
+    "dependencies": [1],
+    "details": "Define all required fields and relationships. Set up triggers for cart updates and status changes.",
+    "testStrategy": "Check schema in Supabase dashboard and test with sample data."
+  },
+  {
+    "id": 3,
+    "title": "Integrate Shopify Webhooks",
+    "description": "Connect Shopify store to backend using webhooks for cart updates and abandonment.",
+    "status": "todo",
+    "priority": "high",
+    "dependencies": [2],
+    "details": "Set up endpoints to receive and process webhook events. Store data in Supabase.",
+    "testStrategy": "Simulate webhook events and verify data is stored correctly."
+  },
+  {
+    "id": 4,
+    "title": "Build Customer-Facing Chatbot Embed",
+    "description": "Develop and embed the Replit AI chatbot on the Shopify checkout page.",
+    "status": "todo",
+    "priority": "high",
+    "dependencies": [3],
+    "details": "Script embed, intent detection, FAQ handling, trigger recovery, log actions to Supabase.",
+    "testStrategy": "Test chatbot on a test Shopify store and verify logs in Supabase."
+  },
+  {
+    "id": 5,
+    "title": "Develop Shop Owner Dashboard",
+    "description": "Create dashboard pages for overview, carts, email editor, AI assistant, and settings.",
+    "status": "todo",
+    "priority": "high",
+    "dependencies": [1,2],
+    "details": "Use V0.dev, shadcn/ui, and Tailwind. Connect to Supabase for data.",
+    "testStrategy": "Navigate all pages, check data loads, and UI responsiveness."
+  },
+  {
+    "id": 6,
+    "title": "Implement Email Automation Flow",
+    "description": "Set up Supabase triggers to call Make.com webhook, which sends recovery emails via Brevo.",
+    "status": "todo",
+    "priority": "high",
+    "dependencies": [2,3],
+    "details": "Webhook includes customer data and email HTML. Log email status in Supabase.",
+    "testStrategy": "Trigger abandoned cart, check email sent, and log updated."
+  },
+  {
+    "id": 7,
+    "title": "Build Email Template Editor",
+    "description": "Allow shop owners to create and preview email templates in the dashboard.",
+    "status": "todo",
+    "priority": "medium",
+    "dependencies": [5,6],
+    "details": "WYSIWYG editor, save templates to Supabase, preview with sample data.",
+    "testStrategy": "Create, edit, and preview templates; verify saved in DB."
+  },
+  {
+    "id": 8,
+    "title": "Develop Shop Owner AI Assistant",
+    "description": "Add a chatbot to the dashboard that answers store data questions using Supabase.",
+    "status": "todo",
+    "priority": "medium",
+    "dependencies": [5],
+    "details": "Integrate with GPT or similar, answer queries like 'How many carts were recovered today?'.",
+    "testStrategy": "Ask sample questions and verify correct responses."
+  },
+  {
+    "id": 9,
+    "title": "Implement Analytics and Reporting",
+    "description": "Show stats and KPIs on the dashboard overview page.",
+    "status": "todo",
+    "priority": "medium",
+    "dependencies": [5],
+    "details": "Display charts and tables for cart recovery, email performance, etc.",
+    "testStrategy": "Verify analytics update with real data."
+  },
+  {
+    "id": 10,
+    "title": "Finalize Security, Auditing, and Mobile Responsiveness",
+    "description": "Ensure secure API connections, log AI interactions, and make UI mobile-friendly.",
+    "status": "todo",
+    "priority": "high",
+    "dependencies": [5,6,7,8,9],
+    "details": "Implement authentication, audit logs, and responsive design.",
+    "testStrategy": "Test on mobile, check logs, and run security checks."
+  }
+] 

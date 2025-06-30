@@ -1,0 +1,14 @@
+{
+	"mcpServers": {
+		"task-master-ai": {
+			"command": "npx",
+			"args": ["-y", "--package=task-master-ai", "task-master-ai"],
+			"env": {
+				"GEMINI_API_KEY_MAIN": "AIzaSyDpdFsmh625IGvFMCOuw8aHMhkxslQEiHs",
+				"OPENROUTER_API_KEY_RESEARCH": "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",
+				"OPENROUTER_API_KEY_FALLBACK": "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"
+			}
+		}
+	}
+}
+  
