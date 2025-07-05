@@ -43,8 +43,8 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
-  const { shop_id, name, subject, html, is_default } = body;
-  if (!shop_id || !name || !subject || !html) {
+  const { shop_id, name, subject, body: templateBody, is_default } = body;
+  if (!shop_id || !name || !subject || !templateBody) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
   // If is_default, unset previous defaults for this shop
@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
   // Insert new template
   const { data, error } = await supabase
     .from('email_templates')
-    .insert([{ shop_id, name, subject, html, is_default: !!is_default }])
+    .insert([{ shop_id, name, subject, body: templateBody, is_default: !!is_default }])
     .select();
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });

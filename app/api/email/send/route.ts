@@ -77,10 +77,10 @@ export async function POST(req: NextRequest) {
     }
 
     // Prepare variables for template
-    const cartItems = (cart.items || [])
+    const cartItems = (cart.line_items || [])
       .map((item: any) => `• ${item.title} - $${item.price}`)
       .join('\n')
-    const cartItemsHtml = (cart.items || [])
+    const cartItemsHtml = (cart.line_items || [])
       .map((item: any) => `
         <div style="margin-bottom:12px;display:flex;align-items:center;">
           ${item.image_url ? `<img src="${item.image_url}" alt="${item.title}" style="width:60px;height:auto;margin-right:12px;border-radius:6px;box-shadow:0 1px 4px #0001;" />` : ''}

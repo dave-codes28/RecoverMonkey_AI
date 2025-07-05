@@ -1,5 +1,11 @@
 import 'dotenv/config';
-import { supabaseAdmin } from '../lib/supabaseAdmin';
+import { createClient } from '@supabase/supabase-js';
+
+// Use the same environment variables as the app
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 async function checkDatabaseContent() {
   console.log('Checking database content...\n');
@@ -21,11 +27,19 @@ async function checkDatabaseContent() {
       });
     }
 
-    // Check all carts
-    console.log('\n2. All carts:');
+    // Check all carts with customer data
+    console.log('\n2. All carts with customer data:');
     const { data: carts, error: cartsError } = await supabaseAdmin
       .from('carts')
-      .select('*')
+      .select(`
+        *,
+        customer:customers(
+          id,
+          name,
+          email,
+          shopify_customer_id
+        )
+      `)
       .order('created_at', { ascending: false });
 
     if (cartsError) {
@@ -33,7 +47,14 @@ async function checkDatabaseContent() {
     } else {
       console.log(`✅ Found ${carts.length} carts:`);
       carts.forEach((cart: any) => {
-        console.log(`   - Cart ${cart.shopify_cart_id} - ${cart.email} - $${cart.total_price} - Status: ${cart.status} - Created: ${cart.created_at}`);
+        const customerName = cart.customer?.name || 'No customer linked';
+        const customerEmail = cart.customer?.email || cart.email || 'No email';
+        console.log(`   - Cart ${cart.shopify_cart_id} - Customer: ${customerName} (${customerEmail}) - $${cart.total_price} - Status: ${cart.status} - Items: ${cart.items?.length || 0}`);
+        
+        // Show items structure if available
+        if (cart.items && cart.items.length > 0) {
+          console.log(`     Items: ${JSON.stringify(cart.items.slice(0, 2))}${cart.items.length > 2 ? '...' : ''}`);
+        }
       });
     }
 
@@ -41,7 +62,15 @@ async function checkDatabaseContent() {
     console.log('\n3. Abandoned carts only:');
     const { data: abandonedCarts, error: abandonedError } = await supabaseAdmin
       .from('carts')
-      .select('*')
+      .select(`
+        *,
+        customer:customers(
+          id,
+          name,
+          email,
+          shopify_customer_id
+        )
+      `)
       .eq('status', 'abandoned')
       .order('created_at', { ascending: false });
 
@@ -50,7 +79,8 @@ async function checkDatabaseContent() {
     } else {
       console.log(`✅ Found ${abandonedCarts.length} abandoned carts`);
       abandonedCarts.forEach((cart: any) => {
-        console.log(`   - Cart ${cart.shopify_cart_id} - ${cart.email} - $${cart.total_price} - Created: ${cart.created_at}`);
+        const customerName = cart.customer?.name || 'No customer linked';
+        console.log(`   - Cart ${cart.shopify_cart_id} - Customer: ${customerName} - $${cart.total_price} - Items: ${cart.items?.length || 0}`);
       });
     }
 

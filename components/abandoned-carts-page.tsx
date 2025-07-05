@@ -17,18 +17,26 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Search, MoreHorizontal, Eye, Mail, MessageSquare, RefreshCw } from "lucide-react"
+import { CartDetailsModal } from "./cart-details-modal"
 
 interface AbandonedCart {
   id: string;
   shopify_cart_id: string;
   shopify_customer_id: string;
-  email: string;
+  customer_email: string;
   total_price: number;
   currency: string;
-  items: any[];
+  line_items: any[];
   created_at: string;
   status: string;
   metadata: any;
+  customer_id?: string;
+  customer?: {
+    id: string;
+    name: string;
+    email: string;
+    shopify_customer_id: string;
+  };
 }
 
 const statusColors = {
@@ -44,6 +52,9 @@ export function AbandonedCartsPage() {
   const [carts, setCarts] = React.useState<AbandonedCart[]>([])
   const [loading, setLoading] = React.useState(true)
   const [error, setError] = React.useState<string | null>(null)
+  const [sendingEmailCartId, setSendingEmailCartId] = React.useState<string | null>(null);
+  const [selectedCart, setSelectedCart] = React.useState<AbandonedCart | null>(null);
+  const [isCartDetailsOpen, setIsCartDetailsOpen] = React.useState(false);
 
   const fetchCarts = async () => {
     try {
@@ -60,6 +71,20 @@ export function AbandonedCartsPage() {
 
       const data = await response.json();
       console.log('[Frontend] Received carts:', data.carts?.length || 0);
+      
+      // Debug: Log the first cart to see the structure
+      if (data.carts && data.carts.length > 0) {
+        console.log('[Frontend] First cart structure:', {
+          id: data.carts[0].id,
+          shopify_cart_id: data.carts[0].shopify_cart_id,
+          customer: data.carts[0].customer,
+          line_items: data.carts[0].line_items,
+          line_items_length: data.carts[0].line_items?.length,
+          customer_email: data.carts[0].customer_email,
+          status: data.carts[0].status
+        });
+      }
+      
       setCarts(data.carts || []);
     } catch (err) {
       console.error('[Frontend] Error fetching carts:', err);
@@ -99,10 +124,11 @@ export function AbandonedCartsPage() {
   }, [])
 
   const filteredCarts = carts.filter((cart) => {
-    const customerName = cart.email || 'Unknown Customer' // Use email as customer name for now
+    const customerName = cart.customer?.name || cart.customer_email || 'Unknown Customer'
+    const customerEmail = cart.customer?.email || cart.customer_email || ''
     const matchesSearch =
       customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      cart.email.toLowerCase().includes(searchTerm.toLowerCase())
+      customerEmail.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = statusFilter === "all" || cart.status === statusFilter
     return matchesSearch && matchesStatus
   })
@@ -123,8 +149,23 @@ export function AbandonedCartsPage() {
   }
 
   const getProductNames = (items: any[]) => {
-    if (!items || items.length === 0) return ['No items']
-    return items.map(item => item.title || 'Unknown Product').slice(0, 3)
+    if (!items || items.length === 0) {
+      console.log('[Frontend] No items found in cart');
+      return ['No items']
+    }
+    
+    console.log('[Frontend] Cart items structure:', items);
+    
+    return items.map(item => {
+      // Handle different possible item structures
+      if (typeof item === 'string') {
+        return item;
+      }
+      if (item && typeof item === 'object') {
+        return item.title || item.name || item.product_title || 'Unknown Product';
+      }
+      return 'Unknown Product';
+    }).slice(0, 3)
   }
 
   if (loading) {
@@ -188,7 +229,7 @@ export function AbandonedCartsPage() {
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search by customer email..."
+                  placeholder="Search by customer name or email..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-8 shadow-sm"
@@ -238,8 +279,8 @@ export function AbandonedCartsPage() {
                   </TableRow>
                 ) : (
                   filteredCarts.map((cart) => {
-                    const customerName = cart.email || 'Unknown Customer'
-                    const productNames = getProductNames(cart.items)
+                    const customerName = cart.customer?.name || cart.customer_email || 'Unknown Customer'
+                    const productNames = getProductNames(cart.line_items)
                     
                     return (
                       <TableRow key={cart.id} className="hover:bg-muted/50 transition-colors">
@@ -262,7 +303,7 @@ export function AbandonedCartsPage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="font-medium">{cart.items?.length || 0} items</div>
+                          <div className="font-medium">{cart.line_items?.length || 0} items</div>
                           <div className="text-sm text-muted-foreground">
                             {productNames.slice(0, 2).join(", ")}
                             {productNames.length > 2 && "..."}
@@ -282,51 +323,72 @@ export function AbandonedCartsPage() {
                             <Button
                               variant="outline"
                               size="sm"
+                              disabled={sendingEmailCartId === cart.id}
                               onClick={async () => {
-                                // Add per-row loading and feedback state if desired
+                                setSendingEmailCartId(cart.id);
                                 try {
-                                  await fetch('/api/email/send', {
+                                  console.log('[Frontend] Sending recovery email for cart:', cart.shopify_cart_id);
+                                  const response = await fetch('/api/email/send', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({ cart_id: cart.shopify_cart_id }),
                                   });
-                                  // Optionally show a toast or update UI
-                                  alert('Recovery email sent!');
+                                  const result = await response.json();
+                                  if (!response.ok) {
+                                    console.error('[Frontend] Email send failed:', result);
+                                    throw new Error(result.error || 'Failed to send recovery email');
+                                  }
+                                  console.log('[Frontend] Email sent successfully:', result);
+                                  alert('Recovery email sent successfully!');
+                                  // Update cart status to 'email_sent'
+                                  await updateCartStatus(cart.id, 'email_sent');
                                 } catch (err) {
-                                  alert('Failed to send recovery email.');
+                                  console.error('[Frontend] Error sending email:', err);
+                                  alert(`Failed to send recovery email: ${err instanceof Error ? err.message : 'Unknown error'}`);
+                                } finally {
+                                  setSendingEmailCartId(null);
                                 }
                               }}
                               className="shadow-sm"
                             >
-                              <Mail className="mr-2 h-4 w-4" />
+                              {sendingEmailCartId === cart.id ? (
+                                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                              ) : (
+                                <Mail className="mr-2 h-4 w-4" />
+                              )}
                               Send Recovery Email
                             </Button>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-muted">
-                                  <span className="sr-only">Open menu</span>
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="shadow-lg">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuItem>
-                                  <Eye className="mr-2 h-4 w-4" />
-                                  View Details
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                  <MessageSquare className="mr-2 h-4 w-4" />
-                                  Chat with Customer
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem 
-                                  onClick={() => updateCartStatus(cart.id, 'recovered')}
-                                  className="text-green-600"
-                                >
-                                  Mark as Recovered
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-muted">
+                                <span className="sr-only">Open menu</span>
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="shadow-lg">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  setSelectedCart(cart);
+                                  setIsCartDetailsOpen(true);
+                                }}
+                              >
+                                <Eye className="mr-2 h-4 w-4" />
+                                View Details
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <MessageSquare className="mr-2 h-4 w-4" />
+                                Chat with Customer
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem 
+                                onClick={() => updateCartStatus(cart.id, 'recovered')}
+                                className="text-green-600"
+                              >
+                                Mark as Recovered
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -338,6 +400,15 @@ export function AbandonedCartsPage() {
           </div>
         </CardContent>
       </Card>
+      <CartDetailsModal
+        cart={selectedCart}
+        isOpen={isCartDetailsOpen}
+        onClose={() => setIsCartDetailsOpen(false)}
+        onMarkRecovered={async (cartId) => {
+          await updateCartStatus(cartId, 'recovered');
+          setIsCartDetailsOpen(false);
+        }}
+      />
     </div>
   )
 }

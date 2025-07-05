@@ -9,8 +9,10 @@ import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Save, Send, Eye } from "lucide-react"
+import { useShop } from "@/context/ShopContext"
 
 export function EmailTemplateEditor() {
+  const { shopId } = useShop()
   const [subject, setSubject] = React.useState("Don't forget your items!")
   const [emailBody, setEmailBody] = React.useState(`Hi {{customer_name}},
 
@@ -32,7 +34,6 @@ The RecoverMonkey Team`)
   const [saving, setSaving] = React.useState(false);
   const [success, setSuccess] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
-  const SHOP_ID = "YOUR_SHOP_ID"; // TODO: Replace with real shop_id from context/auth
 
   const handleSave = async () => {
     setSaving(true);
@@ -43,10 +44,10 @@ The RecoverMonkey Team`)
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          shop_id: SHOP_ID,
+          shop_id: shopId,
           name: "Default", // Or allow user to set name
           subject,
-          html: emailBody,
+          body: emailBody,
           is_default: true,
         }),
       });

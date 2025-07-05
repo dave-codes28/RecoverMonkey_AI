@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
 
     let query = supabaseAdmin
       .from('carts')
-      .select('*') // Remove the customers join for now
+      .select('*') // Temporarily remove customer join until we fix the schema
       .order('created_at', { ascending: false });
 
     // Apply status filter if provided
@@ -27,11 +27,17 @@ export async function GET(req: NextRequest) {
     }
 
     console.log(`[API] Successfully fetched ${data?.length || 0} carts`);
-    // Explicitly type cart as any to fix the implicit any type lint error
-    console.log(
-      '[API] Cart statuses:',
-      (data?.map((cart: any) => cart.status)) || []
-    );
+    // Log sample cart data for debugging
+    if (data && data.length > 0) {
+      console.log('[API] Sample cart data:', {
+        id: data[0].id,
+        shopify_cart_id: data[0].shopify_cart_id,
+        customer_email: data[0].customer_email,
+        line_items: data[0].line_items,
+        status: data[0].status,
+        customer_id: data[0].customer_id // Check if this column exists
+      });
+    }
     
     return NextResponse.json({ 
       carts: data || [],
