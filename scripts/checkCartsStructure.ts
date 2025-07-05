@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { supabase } from '../lib/supabase';
+import { supabaseAdmin } from '../lib/supabaseAdmin';
 
 async function checkCartsStructure() {
   console.log('Checking carts table structure...\n');
@@ -7,7 +7,7 @@ async function checkCartsStructure() {
   try {
     // Check carts table structure
     console.log('1. Carts table structure:');
-    const { data: carts, error: cartsError } = await supabase
+    const { data: carts, error: cartsError } = await supabaseAdmin
       .from('carts')
       .select('*')
       .limit(1);
@@ -25,7 +25,7 @@ async function checkCartsStructure() {
       
       // Try to get table info from Supabase
       console.log('\n2. Trying to get table info...');
-      const { data: tableInfo, error: tableError } = await supabase
+      const { data: tableInfo, error: tableError } = await supabaseAdmin
         .from('information_schema.columns')
         .select('column_name, data_type')
         .eq('table_name', 'carts')

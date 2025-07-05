@@ -1,6 +1,6 @@
 // DEVELOPMENT ONLY: Populates dashboard with test data. Do not run in production.
 import 'dotenv/config';
-import { supabase } from '../lib/supabase';
+import { supabaseAdmin } from '../lib/supabaseAdmin';
 
 async function createDashboardTestData() {
   console.log('Creating dashboard test data...\n');
@@ -37,7 +37,7 @@ async function createDashboardTestData() {
       }
     ];
 
-    const { data: createdCustomers, error: customerError } = await supabase
+    const { data: createdCustomers, error: customerError } = await supabaseAdmin
       .from('customers')
       .insert(customers)
       .select();
@@ -100,7 +100,7 @@ async function createDashboardTestData() {
       }
     ];
 
-    const { data: createdCarts, error: cartError } = await supabase
+    const { data: createdCarts, error: cartError } = await supabaseAdmin
       .from('carts')
       .insert(carts)
       .select();
@@ -133,7 +133,7 @@ async function createDashboardTestData() {
       }
     ];
 
-    const { data: createdEmails, error: emailError } = await supabase
+    const { data: createdEmails, error: emailError } = await supabaseAdmin
       .from('emails')
       .insert(emails)
       .select();

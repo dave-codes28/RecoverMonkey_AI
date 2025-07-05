@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { supabase } from '../lib/supabase';
+import { supabaseAdmin } from '../lib/supabaseAdmin';
 
 async function checkEmailsTable() {
   console.log('Checking emails table structure...\n');
@@ -7,7 +7,7 @@ async function checkEmailsTable() {
   try {
     // Check if emails table exists and what columns it has
     console.log('1. Testing emails table access...');
-    const { data: emails, error: emailsError } = await supabase
+    const { data: emails, error: emailsError } = await supabaseAdmin
       .from('emails')
       .select('*')
       .limit(1);
@@ -27,7 +27,7 @@ async function checkEmailsTable() {
         subject: 'Test Email'
       };
 
-      const { data: testEmail, error: testError } = await supabase
+      const { data: testEmail, error: testError } = await supabaseAdmin
         .from('emails')
         .insert([simpleEmail])
         .select()
@@ -60,7 +60,7 @@ CREATE POLICY "Enable full access to emails" ON emails FOR ALL USING (true);
       } else {
         console.log('✅ Test email created successfully:', testEmail);
         // Clean up test email
-        await supabase.from('emails').delete().eq('id', testEmail.id);
+        await supabaseAdmin.from('emails').delete().eq('id', testEmail.id);
         console.log('✅ Test email cleaned up');
       }
     } else {

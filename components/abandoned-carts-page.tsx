@@ -278,36 +278,56 @@ export function AbandonedCartsPage() {
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-muted">
-                                <span className="sr-only">Open menu</span>
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="shadow-lg">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem>
-                                <Eye className="mr-2 h-4 w-4" />
-                                View Details
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <Mail className="mr-2 h-4 w-4" />
-                                Send Recovery Email
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <MessageSquare className="mr-2 h-4 w-4" />
-                                Chat with Customer
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem 
-                                onClick={() => updateCartStatus(cart.id, 'recovered')}
-                                className="text-green-600"
-                              >
-                                Mark as Recovered
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          <div className="flex items-center justify-end space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={async () => {
+                                // Add per-row loading and feedback state if desired
+                                try {
+                                  await fetch('/api/email/send', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ cart_id: cart.shopify_cart_id }),
+                                  });
+                                  // Optionally show a toast or update UI
+                                  alert('Recovery email sent!');
+                                } catch (err) {
+                                  alert('Failed to send recovery email.');
+                                }
+                              }}
+                              className="shadow-sm"
+                            >
+                              <Mail className="mr-2 h-4 w-4" />
+                              Send Recovery Email
+                            </Button>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-muted">
+                                  <span className="sr-only">Open menu</span>
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="shadow-lg">
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <DropdownMenuItem>
+                                  <Eye className="mr-2 h-4 w-4" />
+                                  View Details
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>
+                                  <MessageSquare className="mr-2 h-4 w-4" />
+                                  Chat with Customer
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem 
+                                  onClick={() => updateCartStatus(cart.id, 'recovered')}
+                                  className="text-green-600"
+                                >
+                                  Mark as Recovered
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
                         </TableCell>
                       </TableRow>
                     )

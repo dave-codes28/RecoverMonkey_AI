@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 export async function GET(req: NextRequest) {
   try {
@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const status = searchParams.get('status');
 
-    let query = supabase
+    let query = supabaseAdmin
       .from('carts')
       .select('*') // Remove the customers join for now
       .order('created_at', { ascending: false });
@@ -27,7 +27,11 @@ export async function GET(req: NextRequest) {
     }
 
     console.log(`[API] Successfully fetched ${data?.length || 0} carts`);
-    console.log('[API] Cart statuses:', data?.map(cart => cart.status) || []);
+    // Explicitly type cart as any to fix the implicit any type lint error
+    console.log(
+      '[API] Cart statuses:',
+      (data?.map((cart: any) => cart.status)) || []
+    );
     
     return NextResponse.json({ 
       carts: data || [],
@@ -50,7 +54,7 @@ export async function PUT(req: NextRequest) {
     
     console.log('[API] Updating cart status:', { cartId, status });
 
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from('carts')
       .update({ status })
       .eq('id', cartId);

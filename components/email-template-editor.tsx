@@ -28,6 +28,39 @@ Complete your purchase now and get free shipping on orders over $50.
 Thanks,
 The RecoverMonkey Team`)
 
+  // --- Added for backend integration and UI feedback ---
+  const [saving, setSaving] = React.useState(false);
+  const [success, setSuccess] = React.useState<string | null>(null);
+  const [error, setError] = React.useState<string | null>(null);
+  const SHOP_ID = "YOUR_SHOP_ID"; // TODO: Replace with real shop_id from context/auth
+
+  const handleSave = async () => {
+    setSaving(true);
+    setSuccess(null);
+    setError(null);
+    try {
+      const res = await fetch("/api/email/templates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          shop_id: SHOP_ID,
+          name: "Default", // Or allow user to set name
+          subject,
+          html: emailBody,
+          is_default: true,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to save template");
+      setSuccess("Template saved successfully!");
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+  // --- End added ---
+
   const previewData = {
     customer_name: "Sarah Johnson",
     cart_items: "• Wireless Headphones - $79.99\n• Phone Case - $19.99\n• Screen Protector - $9.99",
@@ -92,15 +125,18 @@ The RecoverMonkey Team`)
             </div>
 
             <div className="flex space-x-2">
-              <Button className="shadow-sm">
+              <Button className="shadow-sm" onClick={handleSave} disabled={saving}>
                 <Save className="mr-2 h-4 w-4" />
-                Save Template
+                {saving ? "Saving..." : "Save Template"}
               </Button>
               <Button variant="outline" className="shadow-sm">
                 <Send className="mr-2 h-4 w-4" />
                 Test Send
               </Button>
             </div>
+            {/* UI Feedback */}
+            {success && <div className="text-green-600 pt-2">{success}</div>}
+            {error && <div className="text-red-600 pt-2">{error}</div>}
           </CardContent>
         </Card>
 
@@ -143,7 +179,7 @@ The RecoverMonkey Team`)
                           )
                         }
                         if (line.startsWith("[") && line.includes("](")) {
-                          const match = line.match(/\[([^\]]+)\]$$([^)]+)$$/)
+                          const match = line.match(/\[([^\]]+)\]\(([^)]+)\)/)
                           if (match) {
                             return (
                               <p key={index}>

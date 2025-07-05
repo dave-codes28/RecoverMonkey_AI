@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { supabase } from '../lib/supabase';
+import { supabaseAdmin } from '../lib/supabaseAdmin';
 
 async function checkDatabaseContent() {
   console.log('Checking database content...\n');
@@ -7,7 +7,7 @@ async function checkDatabaseContent() {
   try {
     // Check all customers
     console.log('1. All customers:');
-    const { data: customers, error: customersError } = await supabase
+    const { data: customers, error: customersError } = await supabaseAdmin
       .from('customers')
       .select('*')
       .order('created_at', { ascending: false });
@@ -16,14 +16,14 @@ async function checkDatabaseContent() {
       console.error('❌ Error fetching customers:', customersError);
     } else {
       console.log(`✅ Found ${customers.length} customers:`);
-      customers.forEach(customer => {
+      customers.forEach((customer: any) => {
         console.log(`   - ${customer.name} (${customer.email}) - Created: ${customer.created_at}`);
       });
     }
 
     // Check all carts
     console.log('\n2. All carts:');
-    const { data: carts, error: cartsError } = await supabase
+    const { data: carts, error: cartsError } = await supabaseAdmin
       .from('carts')
       .select('*')
       .order('created_at', { ascending: false });
@@ -32,14 +32,14 @@ async function checkDatabaseContent() {
       console.error('❌ Error fetching carts:', cartsError);
     } else {
       console.log(`✅ Found ${carts.length} carts:`);
-      carts.forEach(cart => {
+      carts.forEach((cart: any) => {
         console.log(`   - Cart ${cart.shopify_cart_id} - ${cart.email} - $${cart.total_price} - Status: ${cart.status} - Created: ${cart.created_at}`);
       });
     }
 
     // Check abandoned carts specifically
     console.log('\n3. Abandoned carts only:');
-    const { data: abandonedCarts, error: abandonedError } = await supabase
+    const { data: abandonedCarts, error: abandonedError } = await supabaseAdmin
       .from('carts')
       .select('*')
       .eq('status', 'abandoned')
@@ -49,21 +49,21 @@ async function checkDatabaseContent() {
       console.error('❌ Error fetching abandoned carts:', abandonedError);
     } else {
       console.log(`✅ Found ${abandonedCarts.length} abandoned carts`);
-      abandonedCarts.forEach(cart => {
+      abandonedCarts.forEach((cart: any) => {
         console.log(`   - Cart ${cart.shopify_cart_id} - ${cart.email} - $${cart.total_price} - Created: ${cart.created_at}`);
       });
     }
 
     // Check all cart statuses
     console.log('\n4. Cart statuses:');
-    const { data: statusCounts, error: statusError } = await supabase
+    const { data: statusCounts, error: statusError } = await supabaseAdmin
       .from('carts')
       .select('status');
 
     if (statusError) {
       console.error('❌ Error fetching cart statuses:', statusError);
     } else {
-      const statusMap = statusCounts.reduce((acc, cart) => {
+      const statusMap = statusCounts.reduce((acc: Record<string, number>, cart: any) => {
         acc[cart.status] = (acc[cart.status] || 0) + 1;
         return acc;
       }, {} as Record<string, number>);

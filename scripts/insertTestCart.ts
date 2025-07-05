@@ -1,6 +1,6 @@
 // DEVELOPMENT ONLY: Inserts a test abandoned cart and customer. Do not run in production.
 import 'dotenv/config';
-import { supabase } from '../lib/supabase';
+import { supabaseAdmin } from '../lib/supabaseAdmin';
 
 async function insertTestCart() {
   console.log('Inserting test abandoned cart...\n');
@@ -8,7 +8,7 @@ async function insertTestCart() {
   try {
     // First, create a test customer
     console.log('1. Creating test customer...');
-    const { data: customer, error: customerError } = await supabase
+    const { data: customer, error: customerError } = await supabaseAdmin
       .from('customers')
       .insert([{
         email: 'test-cart@example.com',
@@ -27,7 +27,7 @@ async function insertTestCart() {
 
     // Then, create a test abandoned cart
     console.log('\n2. Creating test abandoned cart...');
-    const { data: cart, error: cartError } = await supabase
+    const { data: cart, error: cartError } = await supabaseAdmin
       .from('carts')
       .insert([{
         shopify_cart_id: 'test-cart-123',

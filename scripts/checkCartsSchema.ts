@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { supabase } from '../lib/supabase';
+import { supabaseAdmin } from '../lib/supabaseAdmin';
 
 async function checkCartsSchema() {
   console.log('Checking carts table schema and RLS...\n');
@@ -7,7 +7,7 @@ async function checkCartsSchema() {
   try {
     // Check if we can access the carts table at all
     console.log('1. Testing basic carts table access...');
-    const { data: carts, error: cartsError } = await supabase
+    const { data: carts, error: cartsError } = await supabaseAdmin
       .from('carts')
       .select('*')
       .limit(1);
@@ -36,7 +36,7 @@ async function checkCartsSchema() {
     // Try to get table schema information
     console.log('\n2. Checking table schema...');
     try {
-      const { data: schemaInfo, error: schemaError } = await supabase
+      const { data: schemaInfo, error: schemaError } = await supabaseAdmin
         .from('information_schema.columns')
         .select('column_name, data_type, is_nullable')
         .eq('table_name', 'carts')
@@ -47,7 +47,7 @@ async function checkCartsSchema() {
         console.error('❌ Error getting schema info:', schemaError);
       } else {
         console.log('✅ Carts table columns:');
-        schemaInfo?.forEach(col => {
+        schemaInfo?.forEach((col: { column_name: string; data_type: string; is_nullable: string }) => {
           console.log(`   - ${col.column_name}: ${col.data_type} (nullable: ${col.is_nullable})`);
         });
       }
@@ -64,7 +64,7 @@ async function checkCartsSchema() {
       status: 'abandoned'
     };
 
-    const { data: insertedCart, error: insertError } = await supabase
+    const { data: insertedCart, error: insertError } = await supabaseAdmin
       .from('carts')
       .insert([minimalCart])
       .select()
@@ -84,7 +84,7 @@ async function checkCartsSchema() {
       console.log('✅ Minimal cart inserted successfully:', insertedCart);
       
       // Clean up
-      await supabase.from('carts').delete().eq('id', insertedCart.id);
+      await supabaseAdmin.from('carts').delete().eq('id', insertedCart.id);
       console.log('✅ Test cart cleaned up');
     }
 

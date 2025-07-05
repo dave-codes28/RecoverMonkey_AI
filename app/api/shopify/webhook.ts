@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
+import { supabase } from '@/lib/supabase';
+import { ShopifyCart } from '@/lib/shopify-utils';
 
 // Helper to get the raw body (Next.js edge API routes require this workaround)
 async function getRawBody(req: NextRequest): Promise<Buffer> {
@@ -13,6 +15,82 @@ async function getRawBody(req: NextRequest): Promise<Buffer> {
     done = doneReading;
   }
   return Buffer.concat(chunks);
+}
+
+async function upsertCustomerAndCart(cart: ShopifyCart) {
+  try {
+    // Upsert customer
+    let customerId: string | null = null;
+    if (cart.customer && cart.customer.email) {
+      const { data: existingCustomer } = await supabase
+        .from('customers')
+        .select('id')
+        .eq('email', cart.customer.email)
+        .single();
+      if (existingCustomer) {
+        // Update
+        const { data: updatedCustomer, error: updateError } = await supabase
+          .from('customers')
+          .update({
+            shopify_customer_id: cart.customer.id?.toString(),
+            email: cart.customer.email,
+            name: `${cart.customer.first_name || ''} ${cart.customer.last_name || ''}`.trim(),
+            metadata: { source: 'shopify_webhook', shopify_data: cart.customer }
+          })
+          .eq('id', existingCustomer.id)
+          .select()
+          .single();
+        if (updateError) {
+          console.error('Error updating customer:', updateError);
+        } else {
+          customerId = updatedCustomer.id;
+        }
+      } else {
+        // Insert
+        const { data: newCustomer, error: insertError } = await supabase
+          .from('customers')
+          .insert([{
+            shopify_customer_id: cart.customer.id?.toString(),
+            email: cart.customer.email,
+            name: `${cart.customer.first_name || ''} ${cart.customer.last_name || ''}`.trim(),
+            metadata: { source: 'shopify_webhook', shopify_data: cart.customer }
+          }])
+          .select()
+          .single();
+        if (insertError) {
+          console.error('Error inserting customer:', insertError);
+        } else {
+          customerId = newCustomer.id;
+        }
+      }
+    }
+    // Upsert cart
+    const cartDataToStore = {
+      shopify_cart_id: cart.id?.toString(),
+      shopify_customer_id: cart.customer?.id?.toString(),
+      email: cart.customer?.email,
+      customer_id: customerId,
+      total_price: parseFloat(cart.total_price || '0'),
+      currency: cart.currency,
+      items: cart.line_items || [],
+      status: 'abandoned',
+      metadata: { shopify_cart_data: cart, source: 'shopify_webhook' },
+      created_at: cart.created_at,
+      updated_at: cart.updated_at
+    };
+    const { data: upsertedCart, error: cartError } = await supabase
+      .from('carts')
+      .upsert([cartDataToStore], { onConflict: 'shopify_cart_id' })
+      .select()
+      .single();
+    if (cartError) {
+      console.error('Error upserting cart:', cartError);
+    } else {
+      console.log('Cart upserted:', upsertedCart);
+    }
+  } catch (err) {
+    console.error('Error in upsertCustomerAndCart:', err);
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -40,11 +118,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
   }
 
-  // Parse and log the event
+  // Parse and process the event
   try {
     const payload = JSON.parse(rawBody.toString('utf8'));
     console.log(`[Shopify Webhook] Topic: ${topic}`);
     console.log(payload);
+
+    if (topic === 'carts/update' || topic === 'carts/create') {
+      await upsertCustomerAndCart(payload as ShopifyCart);
+    } else {
+      // For other topics, just log for now
+      console.log('Unhandled topic, event logged.');
+    }
   } catch (err) {
     console.error('Failed to parse webhook payload', err);
     return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });

@@ -1,7 +1,7 @@
 // DEVELOPMENT ONLY: One-time import script for Shopify abandoned checkouts to Supabase. Do not run in production. Ensure all credentials are set in your .env file.
 import 'dotenv/config';
 import fetch from 'node-fetch';
-import { createClient } from '@supabase/supabase-js';
+import { supabaseAdmin } from '../lib/supabaseAdmin';
 
 const SHOPIFY_API_KEY = process.env.SHOPIFY_API_KEY;
 const SHOPIFY_API_PASSWORD = process.env.SHOPIFY_API_PASSWORD; // Use your access token here if using a custom/public app
@@ -13,7 +13,7 @@ if (!SHOPIFY_API_KEY || !SHOPIFY_API_PASSWORD || !SHOPIFY_STORE || !SUPABASE_URL
   throw new Error('Missing required environment variables. Please check your .env file.');
 }
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabase = supabaseAdmin;
 
 async function fetchAbandonedCheckouts() {
   const url = `https://${SHOPIFY_API_KEY}:${SHOPIFY_API_PASSWORD}@${SHOPIFY_STORE}/admin/api/2023-04/checkouts.json?status=abandoned&limit=250`;

@@ -57,7 +57,16 @@
     "priority": "high",
     "dependencies": [2,3],
     "details": "Webhook includes customer data and email HTML. Log email status in Supabase.",
-    "testStrategy": "Trigger abandoned cart, check email sent, and log updated."
+    "testStrategy": "Trigger abandoned cart, check email sent, and log updated.",
+    "subtasks": [
+      {
+        "id": "6.1",
+        "title": "Create /app/api/email/send/route.ts API route",
+        "description": "Build an API route that accepts a cart/customer ID, loads the cart/customer and default template, merges data into the template, sends the email payload to Make.com, and logs the send in the emails table.",
+        "status": "todo",
+        "details": "- Accepts cart/customer ID as input\n- Loads cart/customer and default email template from Supabase\n- Merges cart/customer data into the template\n- Sends the resulting email payload to the Make.com webhook\n- Logs the email send in the emails table with status and metadata"
+      }
+    ]
   },
   {
     "id": 7,
@@ -67,7 +76,29 @@
     "priority": "medium",
     "dependencies": [5,6],
     "details": "WYSIWYG editor, save templates to Supabase, preview with sample data.",
-    "testStrategy": "Create, edit, and preview templates; verify saved in DB."
+    "testStrategy": "Create, edit, and preview templates; verify saved in DB.",
+    "subtasks": [
+      {
+        "id": "7.1",
+        "title": "Implement backend API endpoints for saving, listing, and fetching default email templates",
+        "status": "todo"
+      },
+      {
+        "id": "7.2",
+        "title": "Connect frontend editor to backend API (save, load, set default)",
+        "status": "todo"
+      },
+      {
+        "id": "7.3",
+        "title": "Add UI feedback for loading, success, and error states",
+        "status": "todo"
+      },
+      {
+        "id": "7.4",
+        "title": "Allow setting a template as default from the UI",
+        "status": "todo"
+      }
+    ]
   },
   {
     "id": 8,
@@ -98,5 +129,16 @@
     "dependencies": [5,6,7,8,9],
     "details": "Implement authentication, audit logs, and responsive design.",
     "testStrategy": "Test on mobile, check logs, and run security checks."
+  },
+  {
+    "id": 11,
+    "title": "Implement SEO Analysis and Recommendations",
+    "description": "Analyze Shopify product data for SEO improvements and provide actionable suggestions in the shop owner dashboard chatbot.",
+    "status": "todo",
+    "priority": "low",
+    "dependencies": [8],
+    "details": "Fetch product data from Shopify, analyze for SEO best practices (titles, descriptions, images, etc.), and surface recommendations in the dashboard chatbot.",
+    "testStrategy": "Verify that the chatbot can provide SEO suggestions for products with missing or suboptimal SEO fields."
   }
-] 
+]   
+ 
