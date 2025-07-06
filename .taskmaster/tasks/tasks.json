@@ -139,6 +139,53 @@
     "dependencies": [8],
     "details": "Fetch product data from Shopify, analyze for SEO best practices (titles, descriptions, images, etc.), and surface recommendations in the dashboard chatbot.",
     "testStrategy": "Verify that the chatbot can provide SEO suggestions for products with missing or suboptimal SEO fields."
+  },
+  {
+    "id": 12,
+    "title": "Implement Supabase Auth and Multi-Tenancy",
+    "description": "Set up Supabase Auth for user login/signup, replace hardcoded shop ID with dynamic user/shop context, create shop registration flow, and enable Row Level Security (RLS) for data isolation.",
+    "status": "todo",
+    "priority": "high",
+    "dependencies": [],
+    "details": "This will unlock true multi-tenant support for the app and is the next major step after the email system.",
+    "testStrategy": "Sign up as a new user, create a shop, and verify that all data is isolated per shop/user.",
+    "subtasks": [
+      {
+        "id": "12.1",
+        "title": "Set up Supabase Auth in the project and configure environment variables",
+        "status": "todo"
+      },
+      {
+        "id": "12.2",
+        "title": "Create user signup and login pages in the Next.js app",
+        "status": "todo"
+      },
+      {
+        "id": "12.3",
+        "title": "Update the database schema to support shops linked to users",
+        "status": "todo"
+      },
+      {
+        "id": "12.4",
+        "title": "Implement shop creation flow after signup",
+        "status": "todo"
+      },
+      {
+        "id": "12.5",
+        "title": "Replace hardcoded shop ID with dynamic user/shop context throughout the app",
+        "status": "todo"
+      },
+      {
+        "id": "12.6",
+        "title": "Enable Row Level Security (RLS) in Supabase for data isolation",
+        "status": "todo"
+      },
+      {
+        "id": "12.7",
+        "title": "Test multi-tenant flows: sign up, create shop, verify data isolation",
+        "status": "todo"
+      }
+    ]
   }
 ]   
  
