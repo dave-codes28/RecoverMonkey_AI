@@ -1,12 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import supabase from "@/lib/supabaseClient";
 
 export default function ConfirmEmailPage() {
   const router = useRouter();
@@ -18,7 +13,7 @@ export default function ConfirmEmailPage() {
 
   useEffect(() => {
     // Try to get the current session/user
-    supabase.auth.getUser().then(({ data, error }) => {
+    supabase.auth.getUser().then(({ data, error }: { data: any; error: any }) => {
       if (error || !data.user) {
         setStatus("error");
       } else if (data.user.email_confirmed_at) {

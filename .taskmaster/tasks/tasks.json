@@ -3,7 +3,7 @@
     "id": 1,
     "title": "Design UI and Project Structure",
     "description": "Create the initial UI design and set up the project structure using Next.js, shadcn/ui, Tailwind, and V0.dev.",
-    "status": "todo",
+    "status": "done",
     "priority": "high",
     "dependencies": [],
     "details": "Set up folders for dashboard, email editor, carts, assistant, settings. Prepare global styles and theme.",
@@ -13,7 +13,7 @@
     "id": 2,
     "title": "Set Up Supabase Database Schema",
     "description": "Create tables for customers, carts, emails, email_templates, chat_logs, and store_settings in Supabase.",
-    "status": "todo",
+    "status": "done",
     "priority": "high",
     "dependencies": [1],
     "details": "Define all required fields and relationships. Set up triggers for cart updates and status changes.",
@@ -43,7 +43,7 @@
     "id": 5,
     "title": "Develop Shop Owner Dashboard",
     "description": "Create dashboard pages for overview, carts, email editor, AI assistant, and settings.",
-    "status": "todo",
+    "status": "done",
     "priority": "high",
     "dependencies": [1,2],
     "details": "Use V0.dev, shadcn/ui, and Tailwind. Connect to Supabase for data.",
@@ -144,7 +144,7 @@
     "id": 12,
     "title": "Implement Supabase Auth and Multi-Tenancy",
     "description": "Set up Supabase Auth for user login/signup, replace hardcoded shop ID with dynamic user/shop context, create shop registration flow, and enable Row Level Security (RLS) for data isolation.",
-    "status": "todo",
+    "status": "done",
     "priority": "high",
     "dependencies": [],
     "details": "This will unlock true multi-tenant support for the app and is the next major step after the email system.",
@@ -153,27 +153,27 @@
       {
         "id": "12.1",
         "title": "Set up Supabase Auth in the project and configure environment variables",
-        "status": "todo"
+        "status": "done"
       },
       {
         "id": "12.2",
         "title": "Create user signup and login pages in the Next.js app",
-        "status": "todo"
+        "status": "done"
       },
       {
         "id": "12.3",
         "title": "Update the database schema to support shops linked to users",
-        "status": "todo"
+        "status": "done"
       },
       {
         "id": "12.4",
         "title": "Implement shop creation flow after signup",
-        "status": "todo"
+        "status": "done"
       },
       {
         "id": "12.5",
         "title": "Replace hardcoded shop ID with dynamic user/shop context throughout the app",
-        "status": "todo"
+        "status": "done"
       },
       {
         "id": "12.6",
@@ -183,7 +183,7 @@
       {
         "id": "12.7",
         "title": "Test multi-tenant flows: sign up, create shop, verify data isolation",
-        "status": "todo"
+        "status": "done"
       }
     ]
   }

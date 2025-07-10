@@ -62,7 +62,9 @@ export function AbandonedCartsPage() {
       setError(null)
 
       console.log('[Frontend] Fetching carts from API...');
-      const response = await fetch('/api/carts');
+      const response = await fetch('/api/carts', {
+        credentials: 'include',
+      });
       
       if (!response.ok) {
         const errorData = await response.json();
@@ -104,6 +106,7 @@ export function AbandonedCartsPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ cartId, status }),
+        credentials: 'include',
       });
 
       if (!response.ok) {

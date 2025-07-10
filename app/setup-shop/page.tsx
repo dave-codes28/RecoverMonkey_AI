@@ -1,12 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import supabase from "@/lib/supabaseClient";
 
 export default function SetupShopPage() {
   const router = useRouter();
@@ -29,17 +24,32 @@ export default function SetupShopPage() {
     }
     const owner_id = userData.user.id;
     // Insert shop
-    const { error: shopError } = await supabase.from("shops").insert([
+    const { data: shopInsertData, error: shopError } = await supabase.from("shops").insert([
       {
         owner_id,
         store_name: storeName,
         shopify_domain: shopifyDomain,
         email,
       },
-    ]);
-    setLoading(false);
+    ]).select().single();
     if (shopError) {
+      setLoading(false);
       setError(shopError.message);
+      return;
+    }
+    // Update user_metadata with shop_id
+    const shopId = shopInsertData?.id;
+    if (!shopId) {
+      setLoading(false);
+      setError("Failed to retrieve new shop ID.");
+      return;
+    }
+    const { error: updateError } = await supabase.auth.updateUser({
+      data: { shop_id: shopId }
+    });
+    setLoading(false);
+    if (updateError) {
+      setError("Shop created, but failed to update user profile with shop ID: " + updateError.message);
     } else {
       router.push("/");
     }

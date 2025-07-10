@@ -18,17 +18,15 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  // TODO: Make shopId dynamic based on auth/session/shop context
-  const shopId = "dae9b65f-1a54-4820-97e4-d662fce6c3e8"
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
       <body>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <ShopProviderClient shopId={shopId}>
-          <main className={inter.className}>{children}</main>
-          </ShopProviderClient>
-        </ThemeProvider>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+            <ShopProviderClient shopId={""}>
+              <main className={inter.className}>{children}</main>
+            </ShopProviderClient>
+          </ThemeProvider>
       </body>
     </html>
   )

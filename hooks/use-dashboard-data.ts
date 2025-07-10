@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabaseClient as supabase } from '@/lib/supabaseClient';
+import supabase from "@/lib/supabaseClient";
 
 interface DashboardStats {
   totalAbandonedCarts: number;

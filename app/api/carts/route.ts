@@ -1,66 +1,66 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
+import { getCurrentShopId } from '@/lib/utils';
+
+function getSupabaseServerClient() {
+  const cookieStore = cookies();
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get: (name) => cookieStore.get(name)?.value,
+        set: () => {}, // no-op
+        remove: () => {}, // no-op
+      }
+    }
+  );
+}
 
 export async function GET(req: NextRequest) {
   try {
+    console.log('[API] Cookies:', cookies().getAll());
     console.log('[API] Fetching carts...');
+    const supabase = getSupabaseServerClient();
+
+    // Get the current user's shop ID
+    let shopId;
+    try {
+      shopId = await getCurrentShopId(supabase);
+    } catch (err: any) {
+      return NextResponse.json({ error: err.message || 'No shop_id found' }, { status: 403 });
+    }
 
     // Get status filter from query params
     const { searchParams } = new URL(req.url);
     const status = searchParams.get('status');
 
-    let query = supabaseAdmin
-      .from('carts')
-      .select('*') // Temporarily remove customer join until we fix the schema
-      .order('created_at', { ascending: false });
-
-    // Apply status filter if provided
-    if (status && status !== 'all') {
+    // Query carts filtered by shop_id (and status if provided)
+    let query = supabase.from('carts').select('*').eq('shop_id', shopId);
+    if (status) {
       query = query.eq('status', status);
     }
-
-    const { data, error } = await query;
-
+    const { data: carts, error } = await query;
     if (error) {
-      console.error('[API] Error fetching carts:', error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
-
-    console.log(`[API] Successfully fetched ${data?.length || 0} carts`);
-    // Log sample cart data for debugging
-    if (data && data.length > 0) {
-      console.log('[API] Sample cart data:', {
-        id: data[0].id,
-        shopify_cart_id: data[0].shopify_cart_id,
-        customer_email: data[0].customer_email,
-        line_items: data[0].line_items,
-        status: data[0].status,
-        customer_id: data[0].customer_id // Check if this column exists
-      });
-    }
-    
-    return NextResponse.json({ 
-      carts: data || [],
-      total: data?.length || 0,
-      status: status || 'all'
-    });
-
-  } catch (error) {
-    console.error('[API] Unexpected error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' }, 
-      { status: 500 }
-    );
+    return NextResponse.json({ carts });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || 'Unknown error' }, { status: 500 });
   }
 }
 
 export async function PUT(req: NextRequest) {
   try {
+    console.log('[API] Cookies:', cookies().getAll());
+    const supabase = getSupabaseServerClient();
+
     const { cartId, status } = await req.json();
     
     console.log('[API] Updating cart status:', { cartId, status });
 
-    const { error } = await supabaseAdmin
+    const { error } = await supabase
       .from('carts')
       .update({ status })
       .eq('id', cartId);
