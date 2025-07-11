@@ -52,9 +52,11 @@ The RecoverMonkey Team`)
         }),
       });
       const data = await res.json();
+      console.log("API response:", res, data); // <-- Added for debugging
       if (!res.ok) throw new Error(data.error || "Failed to save template");
       setSuccess("Template saved successfully!");
     } catch (err: any) {
+      console.error("Save error:", err); // <-- Added for debugging
       setError(err.message);
     } finally {
       setSaving(false);
