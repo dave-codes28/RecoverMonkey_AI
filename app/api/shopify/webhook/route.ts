@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import supabase from '@/lib/supabaseClient';
 
 // Process cart abandonment event
 async function processCartAbandonment(cartData: any) {

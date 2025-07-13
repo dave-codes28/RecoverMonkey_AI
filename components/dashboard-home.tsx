@@ -6,9 +6,12 @@ import { Progress } from "@/components/ui/progress"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ArrowUpIcon, ArrowDownIcon, ShoppingCart, Mail, TrendingUp, Users, Loader2 } from "lucide-react"
 import { useDashboardData } from "@/hooks/use-dashboard-data"
+import { useToast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button";
 
 export function DashboardHome() {
-  const { stats, recentActivity, loading, error } = useDashboardData();
+  const { stats, recentActivity, loading, error, refetch } = useDashboardData();
+  const { toast } = useToast();
 
   const dashboardStats = [
   {
@@ -41,6 +44,32 @@ export function DashboardHome() {
   },
   ];
 
+  // Add sync handler
+  const handleSyncAbandonedCarts = async () => {
+    try {
+      // TODO: Replace with actual shop_id from context/session
+      const shop_id = localStorage.getItem('shop_id');
+      if (!shop_id) {
+        toast({ title: 'Error', description: 'No shop_id found', variant: 'destructive' });
+        return;
+      }
+      const res = await fetch('/api/shopify/sync-abandoned-carts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shop_id }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast({ title: 'Sync Complete', description: `${data.imported} new abandoned carts imported.`, variant: 'default' });
+        refetch();
+      } else {
+        toast({ title: 'Sync Failed', description: data.error || 'Unknown error', variant: 'destructive' });
+      }
+    } catch (err) {
+      toast({ title: 'Sync Failed', description: err instanceof Error ? err.message : 'Unknown error', variant: 'destructive' });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -63,9 +92,17 @@ export function DashboardHome() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-        <p className="text-muted-foreground">Overview of your cart recovery performance</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+          <p className="text-muted-foreground">Overview of your cart recovery performance</p>
+        </div>
+        <Button
+          onClick={handleSyncAbandonedCarts}
+          className="bg-green-600 hover:bg-green-700 text-white"
+        >
+          Sync Abandoned Carts
+        </Button>
       </div>
 
       {/* Stats Cards */}

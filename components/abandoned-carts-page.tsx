@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import * as React from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,10 +14,11 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, MoreHorizontal, Eye, Mail, MessageSquare, RefreshCw } from "lucide-react"
-import { CartDetailsModal } from "./cart-details-modal"
+} from "@/components/ui/dropdown-menu";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Search, MoreHorizontal, Eye, Mail, MessageSquare, RefreshCw } from "lucide-react";
+import { CartDetailsModal } from "./cart-details-modal";
+import { useToast } from "@/components/ui/use-toast";
 
 interface AbandonedCart {
   id: string;
@@ -44,28 +45,31 @@ const statusColors = {
   email_sent: "outline",
   recovered: "default",
   pending: "secondary",
-} as const
+} as const;
 
 export function AbandonedCartsPage() {
-  const [searchTerm, setSearchTerm] = React.useState("")
-  const [statusFilter, setStatusFilter] = React.useState("all")
-  const [carts, setCarts] = React.useState<AbandonedCart[]>([])
-  const [loading, setLoading] = React.useState(true)
-  const [error, setError] = React.useState<string | null>(null)
+  const { toast } = useToast();
+  const [searchTerm, setSearchTerm] = React.useState("");
+  const [statusFilter, setStatusFilter] = React.useState("all");
+  const [carts, setCarts] = React.useState<AbandonedCart[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
   const [sendingEmailCartId, setSendingEmailCartId] = React.useState<string | null>(null);
   const [selectedCart, setSelectedCart] = React.useState<AbandonedCart | null>(null);
   const [isCartDetailsOpen, setIsCartDetailsOpen] = React.useState(false);
 
+  console.log('[Frontend] AbandonedCartsPage mounted');
+
   const fetchCarts = async () => {
     try {
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
 
       console.log('[Frontend] Fetching carts from API...');
       const response = await fetch('/api/carts', {
         credentials: 'include',
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to fetch carts');
@@ -73,8 +77,7 @@ export function AbandonedCartsPage() {
 
       const data = await response.json();
       console.log('[Frontend] Received carts:', data.carts?.length || 0);
-      
-      // Debug: Log the first cart to see the structure
+
       if (data.carts && data.carts.length > 0) {
         console.log('[Frontend] First cart structure:', {
           id: data.carts[0].id,
@@ -83,28 +86,26 @@ export function AbandonedCartsPage() {
           line_items: data.carts[0].line_items,
           line_items_length: data.carts[0].line_items?.length,
           customer_email: data.carts[0].customer_email,
-          status: data.carts[0].status
+          status: data.carts[0].status,
         });
       }
-      
+
       setCarts(data.carts || []);
     } catch (err) {
       console.error('[Frontend] Error fetching carts:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch abandoned carts');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const updateCartStatus = async (cartId: string, status: string) => {
     try {
       console.log('[Frontend] Updating cart status:', { cartId, status });
-      
+
       const response = await fetch('/api/carts', {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cartId, status }),
         credentials: 'include',
       });
@@ -114,62 +115,89 @@ export function AbandonedCartsPage() {
         throw new Error(errorData.error || 'Failed to update cart');
       }
 
-      // Refresh the carts list
       await fetchCarts();
     } catch (err) {
       console.error('[Frontend] Error updating cart status:', err);
       throw err;
     }
-  }
+  };
+
+  const handleSyncAbandonedCarts = async () => {
+    console.log('[Frontend] Sync button clicked! Starting sync process...');
+    try {
+      const shop_id = localStorage.getItem('shop_id') || 'd5a79116-842f-4a4b-afd6-a4bb225119cf'; // Fallback for testing
+      console.log('[Frontend] Retrieved shop_id:', shop_id);
+      if (!shop_id) {
+        toast({ title: 'Error', description: 'No shop_id found', variant: 'destructive' });
+        return;
+      }
+      console.log('[Frontend] Sending sync request to /api/shopify/sync-abandoned-carts with shop_id:', shop_id);
+      const res = await fetch('/api/shopify/sync-abandoned-carts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shop_id }),
+        credentials: 'include',
+      });
+      console.log('[Frontend] Received response:', res.status, res.statusText);
+      const data = await res.json();
+      console.log('[Frontend] Response data:', data);
+      if (res.ok) {
+        toast({ title: 'Sync Complete', description: `${data.imported} new abandoned carts imported.`, variant: 'default' });
+        fetchCarts();
+      } else {
+        toast({ title: 'Sync Failed', description: data.error || 'Unknown error', variant: 'destructive' });
+      }
+    } catch (err) {
+      console.error('[Frontend] Error during sync:', err);
+      toast({ title: 'Sync Failed', description: err instanceof Error ? err.message : 'Unknown error', variant: 'destructive' });
+    }
+  };
 
   React.useEffect(() => {
-    fetchCarts()
-  }, [])
+    fetchCarts();
+  }, []);
 
   const filteredCarts = carts.filter((cart) => {
-    const customerName = cart.customer?.name || cart.customer_email || 'Unknown Customer'
-    const customerEmail = cart.customer?.email || cart.customer_email || ''
+    const customerName = cart.customer?.name || cart.customer_email || 'Unknown Customer';
+    const customerEmail = cart.customer?.email || cart.customer_email || '';
     const matchesSearch =
       customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customerEmail.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatus = statusFilter === "all" || cart.status === statusFilter
-    return matchesSearch && matchesStatus
-  })
+      customerEmail.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === "all" || cart.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   const formatCurrency = (amount: number, currency: string) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: currency || 'USD'
-    }).format(amount)
-  }
+      currency: currency || 'USD',
+    }).format(amount);
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
-    })
-  }
+      day: 'numeric',
+    });
+  };
 
   const getProductNames = (items: any[]) => {
     if (!items || items.length === 0) {
       console.log('[Frontend] No items found in cart');
-      return ['No items']
+      return ['No items'];
     }
-    
+
     console.log('[Frontend] Cart items structure:', items);
-    
-    return items.map(item => {
-      // Handle different possible item structures
-      if (typeof item === 'string') {
-        return item;
-      }
+
+    return items.map((item) => {
+      if (typeof item === 'string') return item;
       if (item && typeof item === 'object') {
         return item.title || item.name || item.product_title || 'Unknown Product';
       }
       return 'Unknown Product';
-    }).slice(0, 3)
-  }
+    }).slice(0, 3);
+  };
 
   if (loading) {
     return (
@@ -182,7 +210,7 @@ export function AbandonedCartsPage() {
           <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -204,7 +232,7 @@ export function AbandonedCartsPage() {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
@@ -214,9 +242,11 @@ export function AbandonedCartsPage() {
           <h2 className="text-3xl font-bold tracking-tight">Abandoned Carts</h2>
           <p className="text-muted-foreground">Manage and recover abandoned shopping carts</p>
         </div>
-        <Button onClick={fetchCarts} variant="outline">
-          <RefreshCw className="mr-2 h-4 w-4" />
-          Refresh
+        <Button
+          onClick={() => handleSyncAbandonedCarts()} // Explicitly bind with arrow function
+          className="bg-green-600 hover:bg-green-700 text-white"
+        >
+          Sync Abandoned Carts
         </Button>
       </div>
 
@@ -282,9 +312,9 @@ export function AbandonedCartsPage() {
                   </TableRow>
                 ) : (
                   filteredCarts.map((cart) => {
-                    const customerName = cart.customer?.name || cart.customer_email || 'Unknown Customer'
-                    const productNames = getProductNames(cart.line_items)
-                    
+                    const customerName = cart.customer?.name || cart.customer_email || 'Unknown Customer';
+                    const productNames = getProductNames(cart.line_items);
+
                     return (
                       <TableRow key={cart.id} className="hover:bg-muted/50 transition-colors">
                         <TableCell>
@@ -343,7 +373,6 @@ export function AbandonedCartsPage() {
                                   }
                                   console.log('[Frontend] Email sent successfully:', result);
                                   alert('Recovery email sent successfully!');
-                                  // Update cart status to 'email_sent'
                                   await updateCartStatus(cart.id, 'email_sent');
                                 } catch (err) {
                                   console.error('[Frontend] Error sending email:', err);
@@ -361,41 +390,41 @@ export function AbandonedCartsPage() {
                               )}
                               Send Recovery Email
                             </Button>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-muted">
-                                <span className="sr-only">Open menu</span>
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="shadow-lg">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem
-                                onClick={() => {
-                                  setSelectedCart(cart);
-                                  setIsCartDetailsOpen(true);
-                                }}
-                              >
-                                <Eye className="mr-2 h-4 w-4" />
-                                View Details
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <MessageSquare className="mr-2 h-4 w-4" />
-                                Chat with Customer
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem 
-                                onClick={() => updateCartStatus(cart.id, 'recovered')}
-                                className="text-green-600"
-                              >
-                                Mark as Recovered
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-muted">
+                                  <span className="sr-only">Open menu</span>
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="shadow-lg">
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    setSelectedCart(cart);
+                                    setIsCartDetailsOpen(true);
+                                  }}
+                                >
+                                  <Eye className="mr-2 h-4 w-4" />
+                                  View Details
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>
+                                  <MessageSquare className="mr-2 h-4 w-4" />
+                                  Chat with Customer
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  onClick={() => updateCartStatus(cart.id, 'recovered')}
+                                  className="text-green-600"
+                                >
+                                  Mark as Recovered
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </div>
                         </TableCell>
                       </TableRow>
-                    )
+                    );
                   })
                 )}
               </TableBody>
@@ -413,5 +442,5 @@ export function AbandonedCartsPage() {
         }}
       />
     </div>
-  )
-}
+  );
+} 
