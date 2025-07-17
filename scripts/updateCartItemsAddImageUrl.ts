@@ -1,5 +1,6 @@
+
 import 'dotenv/config';
-import { supabaseAdmin } from '../lib/supabaseAdmin';
+import supabaseAdmin from '../lib/supabaseAdmin';
 
 async function updateCartItemsAddImageUrl() {
   console.log('Starting migration: Add image_url to each cart item if missing...');

@@ -6,42 +6,50 @@ import { Progress } from "@/components/ui/progress"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ArrowUpIcon, ArrowDownIcon, ShoppingCart, Mail, TrendingUp, Users, Loader2 } from "lucide-react"
 import { useDashboardData } from "@/hooks/use-dashboard-data"
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 
 export function DashboardHome() {
   const { stats, recentActivity, loading, error, refetch } = useDashboardData();
   const { toast } = useToast();
 
+  // Defensive: fallback values for stats
+  const safeStats = stats || {
+    totalAbandonedCarts: 0,
+    recoveredCarts: 0,
+    emailsSent: 0,
+    recoveryRate: 0,
+  };
+
   const dashboardStats = [
-  {
-    title: "Total Abandoned Carts",
-      value: stats.totalAbandonedCarts.toString(),
-    change: "+12%",
-    changeType: "increase" as const,
-    icon: ShoppingCart,
-  },
-  {
-    title: "Recovered Carts",
-      value: stats.recoveredCarts.toString(),
-    change: "+8%",
-    changeType: "increase" as const,
-    icon: TrendingUp,
-  },
-  {
-    title: "Emails Sent",
-      value: stats.emailsSent.toString(),
-    change: "+23%",
-    changeType: "increase" as const,
-    icon: Mail,
-  },
-  {
-    title: "Recovery Rate",
-      value: `${stats.recoveryRate}%`,
-    change: "-2%",
-    changeType: "decrease" as const,
-    icon: Users,
-  },
+    {
+      title: "Total Abandoned Carts",
+      value: safeStats.totalAbandonedCarts?.toString() ?? "-",
+      change: "+12%",
+      changeType: "increase" as const,
+      icon: ShoppingCart,
+    },
+    {
+      title: "Recovered Carts",
+      value: safeStats.recoveredCarts?.toString() ?? "-",
+      change: "+8%",
+      changeType: "increase" as const,
+      icon: TrendingUp,
+    },
+    {
+      title: "Emails Sent",
+      value: safeStats.emailsSent?.toString() ?? "-",
+      change: "+23%",
+      changeType: "increase" as const,
+      icon: Mail,
+    },
+    {
+      title: "Recovery Rate",
+      value: safeStats.recoveryRate !== undefined ? `${safeStats.recoveryRate}%` : "-",
+      change: "-2%",
+      changeType: "decrease" as const,
+      icon: Users,
+    },
   ];
 
   // Add sync handler
@@ -89,6 +97,9 @@ export function DashboardHome() {
       </div>
     );
   }
+
+  // Defensive: fallback for recentActivity
+  const safeRecentActivity = Array.isArray(recentActivity) ? recentActivity : [];
 
   return (
     <div className="space-y-8">
@@ -142,9 +153,9 @@ export function DashboardHome() {
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
                 <span>Email Recovery</span>
-                <span>{stats.recoveryRate}%</span>
+                <span>{safeStats.recoveryRate}%</span>
               </div>
-              <Progress value={stats.recoveryRate} className="h-2" />
+              <Progress value={safeStats.recoveryRate} className="h-2" />
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
@@ -171,34 +182,34 @@ export function DashboardHome() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentActivity.length > 0 ? (
-                recentActivity.map((activity) => (
-                <div
-                  key={activity.id}
-                  className="flex items-center space-x-4 p-2 rounded-lg hover:bg-muted/50 transition-colors"
-                >
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={activity.avatar || "/placeholder.svg"} alt={activity.customer} />
-                    <AvatarFallback>
-                      {activity.customer
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium leading-none">{activity.customer}</p>
-                      <Badge variant={activity.type === "recovered" ? "default" : "secondary"} className="text-xs">
-                        {activity.type}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs text-muted-foreground">{activity.email}</p>
-                      <p className="text-xs font-medium">{activity.amount}</p>
+              {safeRecentActivity.length > 0 ? (
+                safeRecentActivity.map((activity) => (
+                  <div
+                    key={activity.id}
+                    className="flex items-center space-x-4 p-2 rounded-lg hover:bg-muted/50 transition-colors"
+                  >
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={activity.avatar || "/placeholder.svg"} alt={activity.customer} />
+                      <AvatarFallback>
+                        {activity.customer
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium leading-none">{activity.customer}</p>
+                        <Badge variant={activity.type === "recovered" ? "default" : "secondary"} className="text-xs">
+                          {activity.type}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs text-muted-foreground">{activity.email}</p>
+                        <p className="text-xs font-medium">{activity.amount}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
                 ))
               ) : (
                 <div className="text-center py-8 text-muted-foreground">

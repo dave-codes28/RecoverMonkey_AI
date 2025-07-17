@@ -1,9 +1,9 @@
+import "./globals.css"
 import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
-import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
-import ShopProviderClient from "@/components/ShopProviderClient"
+import { ThemeProvider } from "@/components/ui/theme-provider"
+import ShopProviderClient from "@/components/ui/ShopProviderClient"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -21,10 +21,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
-      <body>
+      <body className={`bg-background text-foreground ${inter.className}`}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
             <ShopProviderClient shopId={""}>
-              <main className={inter.className}>{children}</main>
+              <main>{children}</main>
             </ShopProviderClient>
           </ThemeProvider>
       </body>

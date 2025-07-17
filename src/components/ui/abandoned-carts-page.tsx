@@ -18,7 +18,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, MoreHorizontal, Eye, Mail, MessageSquare, RefreshCw } from "lucide-react";
 import { CartDetailsModal } from "./cart-details-modal";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface AbandonedCart {
   id: string;
@@ -69,7 +69,7 @@ export function AbandonedCartsPage() {
       const response = await fetch('/api/carts', {
         credentials: 'include',
       });
-
+      
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to fetch carts');
@@ -77,7 +77,7 @@ export function AbandonedCartsPage() {
 
       const data = await response.json();
       console.log('[Frontend] Received carts:', data.carts?.length || 0);
-
+      
       if (data.carts && data.carts.length > 0) {
         console.log('[Frontend] First cart structure:', {
           id: data.carts[0].id,
@@ -89,7 +89,7 @@ export function AbandonedCartsPage() {
           status: data.carts[0].status,
         });
       }
-
+      
       setCarts(data.carts || []);
     } catch (err) {
       console.error('[Frontend] Error fetching carts:', err);
@@ -102,7 +102,7 @@ export function AbandonedCartsPage() {
   const updateCartStatus = async (cartId: string, status: string) => {
     try {
       console.log('[Frontend] Updating cart status:', { cartId, status });
-
+      
       const response = await fetch('/api/carts', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -187,9 +187,9 @@ export function AbandonedCartsPage() {
       console.log('[Frontend] No items found in cart');
       return ['No items'];
     }
-
+    
     console.log('[Frontend] Cart items structure:', items);
-
+    
     return items.map((item) => {
       if (typeof item === 'string') return item;
       if (item && typeof item === 'object') {
@@ -314,7 +314,7 @@ export function AbandonedCartsPage() {
                   filteredCarts.map((cart) => {
                     const customerName = cart.customer?.name || cart.customer_email || 'Unknown Customer';
                     const productNames = getProductNames(cart.line_items);
-
+                    
                     return (
                       <TableRow key={cart.id} className="hover:bg-muted/50 transition-colors">
                         <TableCell>
@@ -390,37 +390,37 @@ export function AbandonedCartsPage() {
                               )}
                               Send Recovery Email
                             </Button>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-muted">
-                                  <span className="sr-only">Open menu</span>
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="shadow-lg">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuItem
-                                  onClick={() => {
-                                    setSelectedCart(cart);
-                                    setIsCartDetailsOpen(true);
-                                  }}
-                                >
-                                  <Eye className="mr-2 h-4 w-4" />
-                                  View Details
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                  <MessageSquare className="mr-2 h-4 w-4" />
-                                  Chat with Customer
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  onClick={() => updateCartStatus(cart.id, 'recovered')}
-                                  className="text-green-600"
-                                >
-                                  Mark as Recovered
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-muted">
+                                <span className="sr-only">Open menu</span>
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="shadow-lg">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  setSelectedCart(cart);
+                                  setIsCartDetailsOpen(true);
+                                }}
+                              >
+                                <Eye className="mr-2 h-4 w-4" />
+                                View Details
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <MessageSquare className="mr-2 h-4 w-4" />
+                                Chat with Customer
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem 
+                                onClick={() => updateCartStatus(cart.id, 'recovered')}
+                                className="text-green-600"
+                              >
+                                Mark as Recovered
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -443,4 +443,4 @@ export function AbandonedCartsPage() {
       />
     </div>
   );
-} 
+}
