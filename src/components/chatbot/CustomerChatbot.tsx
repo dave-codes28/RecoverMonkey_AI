@@ -1,4 +1,6 @@
+"use client";
 import React, { useState, useRef, useEffect } from 'react';
+
 import { ChatMessage } from './ChatMessage';
 import { ChatInput } from './ChatInput';
 import { sendMessageToChatbot, logChatbotEvent } from './ChatbotAPI';

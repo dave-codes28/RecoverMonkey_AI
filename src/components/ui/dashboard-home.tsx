@@ -8,6 +8,8 @@ import { ArrowUpIcon, ArrowDownIcon, ShoppingCart, Mail, TrendingUp, Users, Load
 import { useDashboardData } from "@/hooks/use-dashboard-data"
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import { RecentInquiriesWidget } from "@/components/ui/RecentInquiriesWidget";
+import { FloatingAssistantWidget } from "@/components/ui/FloatingAssistantWidget";
 
 export function DashboardHome() {
   const { stats, recentActivity, loading, error, refetch } = useDashboardData();
@@ -103,6 +105,7 @@ export function DashboardHome() {
 
   return (
     <div className="space-y-8">
+      <FloatingAssistantWidget />
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
@@ -142,45 +145,15 @@ export function DashboardHome() {
         ))}
       </div>
 
-      {/* Recovery Progress */}
+      {/* Customer Inquiries Widget & Recent Activity */}
       <div className="grid gap-4 md:grid-cols-2">
-        <Card className="card-shadow">
-          <CardHeader>
-            <CardTitle>Recovery Progress</CardTitle>
-            <CardDescription>Current month recovery performance</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span>Email Recovery</span>
-                <span>{safeStats.recoveryRate}%</span>
-              </div>
-              <Progress value={safeStats.recoveryRate} className="h-2" />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span>SMS Recovery</span>
-                <span>45%</span>
-              </div>
-              <Progress value={45} className="h-2" />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span>Push Notifications</span>
-                <span>32%</span>
-              </div>
-              <Progress value={32} className="h-2" />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Recent Activity */}
-        <Card className="card-shadow">
+        <RecentInquiriesWidget />
+        <Card className="card-shadow max-h-[400px] flex flex-col">
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
             <CardDescription>Latest abandoned and recovered carts</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="overflow-y-auto flex-1">
             <div className="space-y-4">
               {safeRecentActivity.length > 0 ? (
                 safeRecentActivity.map((activity) => (
@@ -221,6 +194,37 @@ export function DashboardHome() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Recovery Progress full width below */}
+      <Card className="card-shadow max-h-[400px] flex flex-col">
+        <CardHeader>
+          <CardTitle>Recovery Progress</CardTitle>
+          <CardDescription>Current month recovery performance</CardDescription>
+        </CardHeader>
+        <CardContent className="overflow-y-auto flex-1 space-y-4">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span>Email Recovery</span>
+              <span>{safeStats.recoveryRate}%</span>
+            </div>
+            <Progress value={safeStats.recoveryRate} className="h-2" />
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span>SMS Recovery</span>
+              <span>45%</span>
+            </div>
+            <Progress value={45} className="h-2" />
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span>Push Notifications</span>
+              <span>32%</span>
+            </div>
+            <Progress value={32} className="h-2" />
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

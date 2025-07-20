@@ -60,6 +60,12 @@ const navigation = [
     href: "/assistant",
     icon: Bot,
   },
+  // Add Customer Inquiries link here
+  {
+    name: "Customer Inquiries",
+    href: "/customer-inquiries",
+    icon: Mail,
+  },
   {
     name: "Settings",
     href: "/settings",

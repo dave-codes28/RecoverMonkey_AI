@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
 
-// Process cart abandonment event
+// Function to process cart abandonment event
 async function processCartAbandonment(cartData: any) {
   try {
     console.log('Processing cart abandonment:', cartData);
