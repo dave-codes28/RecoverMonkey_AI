@@ -8,6 +8,8 @@ interface UseInquiriesOptions {
   dateRange?: { from: Date; to: Date };
   page?: number;
   pageSize?: number;
+  store_id?: string;
+  shop_id?: string;
 }
 
 export function useInquiries(options: UseInquiriesOptions = {}) {
@@ -24,6 +26,12 @@ export function useInquiries(options: UseInquiriesOptions = {}) {
       .select("*", { count: "exact" })
       .order("created_at", { ascending: false });
 
+    if (options.store_id) {
+      query = query.eq("store_id", options.store_id);
+    }
+    if (options.shop_id) {
+      query = query.eq("shop_id", options.shop_id);
+    }
     if (options.status && options.status !== "All") {
       query = query.eq("status", options.status);
     }
@@ -48,11 +56,29 @@ export function useInquiries(options: UseInquiriesOptions = {}) {
       setTotal(count || 0);
     }
     setLoading(false);
-  }, [options.status, options.search, options.dateRange, options.page, options.pageSize]);
+  }, [options.store_id, options.shop_id, options.status, options.search, options.dateRange, options.page, options.pageSize]);
 
   useEffect(() => {
     fetchInquiries();
   }, [fetchInquiries]);
 
-  return { inquiries, loading, error, total, refetch: fetchInquiries };
+  // Add updateInquiryStatus
+  const updateInquiryStatus = useCallback(async (id: string, newStatus: string) => {
+    setLoading(true);
+    setError(null);
+    const { error } = await supabase
+      .from("inquiries")
+      .update({ status: newStatus })
+      .eq("id", id);
+    if (error) {
+      setError(error.message);
+      setLoading(false);
+      return false;
+    }
+    await fetchInquiries();
+    setLoading(false);
+    return true;
+  }, [fetchInquiries]);
+
+  return { inquiries, loading, error, total, refetch: fetchInquiries, updateInquiryStatus };
 } 

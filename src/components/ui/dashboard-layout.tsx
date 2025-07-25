@@ -51,6 +51,11 @@ const navigation = [
     icon: ShoppingCart,
   },
   {
+    name: "Inquiries",
+    href: "/customer-inquiries",
+    icon: Mail,
+  },
+  {
     name: "Templates",
     href: "/templates",
     icon: Mail,
@@ -59,12 +64,6 @@ const navigation = [
     name: "Assistant",
     href: "/assistant",
     icon: Bot,
-  },
-  // Add Customer Inquiries link here
-  {
-    name: "Customer Inquiries",
-    href: "/customer-inquiries",
-    icon: Mail,
   },
   {
     name: "Settings",

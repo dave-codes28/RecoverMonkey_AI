@@ -127,7 +127,7 @@ The RecoverMonkey Team`)
             </div>
 
             <div className="flex space-x-2">
-              <Button className="shadow-sm" onClick={handleSave} disabled={saving}>
+              <Button className="bg-green-600 hover:bg-green-700 text-white shadow-sm" onClick={handleSave} disabled={saving}>
                 <Save className="mr-2 h-4 w-4" />
                 {saving ? "Saving..." : "Save Template"}
               </Button>

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabaseAdmin'
+import supabaseAdmin from '@/lib/supabaseAdmin';
 import { getDefaultEmailTemplate } from '@/lib/email-templates'
 
 const MAKE_COM_WEBHOOK_URL = process.env.MAKE_COM_WEBHOOK_URL
