@@ -35,7 +35,7 @@ export function RecentInquiriesWidget() {
   const inquiry = inquiries && inquiries.length > 0 ? inquiries[0] : null;
 
   return (
-    <Card className="mb-6 p-4">
+    <Card className="mb-6 p-4 border border-gray-200/60 dark:border-gray-700/60 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
       <div className="flex items-center justify-between mb-2">
         <h2 className="text-lg font-semibold">Recent Inquiries</h2>
         <div className="flex gap-2">

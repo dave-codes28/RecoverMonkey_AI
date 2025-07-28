@@ -129,7 +129,7 @@ export function DashboardHome() {
         {/* Enhanced Stats Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {dashboardStats.map((stat, index) => (
-            <Card key={stat.title} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-0 shadow-md">
+            <Card key={stat.title} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-gray-200/60 dark:border-gray-700/60 shadow-md">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <div className="space-y-1">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -167,7 +167,7 @@ export function DashboardHome() {
           <RecentInquiriesWidget />
 
           {/* Recent Activity - Enhanced */}
-          <Card className="hover:shadow-lg transition-shadow duration-300">
+          <Card className="hover:shadow-lg transition-shadow duration-300 border border-gray-200/60 dark:border-gray-700/60">
           <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="space-y-1">

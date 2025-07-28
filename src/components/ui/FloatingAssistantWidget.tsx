@@ -39,8 +39,13 @@ export function FloatingAssistantWidget() {
         side="top"
         align="end"
         sideOffset={16}
-        className="w-[350px] max-w-full h-[500px] rounded-2xl shadow-xl z-50 p-0 flex flex-col overflow-hidden"
-        // No need for fixed positioning or inline styles here
+        className="w-[350px] max-w-full h-[500px] rounded-2xl shadow-xl z-50 p-0 flex flex-col overflow-hidden bg-white dark:bg-background"
+        style={{
+          border: '2.5px solid transparent',
+          background:
+            'linear-gradient(var(--popover-bg, #fff), var(--popover-bg, #fff)) padding-box, linear-gradient(135deg, #22c55e 0%, #16a34a 100%) border-box',
+          borderRadius: '1rem',
+        }}
       >
         <AIAssistantChatWindow />
       </PopoverContent>

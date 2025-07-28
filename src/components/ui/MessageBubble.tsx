@@ -10,7 +10,7 @@ export default function MessageBubble({ role, content }: MessageBubbleProps) {
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
       <div
-        className={`max-w-xs p-2 rounded-lg bg-black text-white`}
+        className={`max-w-xs p-2 rounded-lg bg-green-500 text-black`}
       >
         {content}
       </div>

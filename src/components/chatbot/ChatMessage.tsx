@@ -14,8 +14,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
       aria-label={isUser ? 'Your message' : 'Bot message'}
     >
       <div
-        className={`rounded-lg px-4 py-2 max-w-xs break-words shadow-sm text-sm
-          ${isUser ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+        className={`rounded-lg px-4 py-2 max-w-xs break-words shadow-sm text-sm !bg-green-500 !text-black`}
       >
         {message.text}
         <span className="block text-xs text-gray-400 mt-1 text-right">

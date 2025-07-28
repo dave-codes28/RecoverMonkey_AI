@@ -17,7 +17,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-// import { ThemeToggle } from "@/components/theme-toggle"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { Separator } from "@/components/ui/separator"
 
 console.log({
@@ -115,7 +115,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           <Separator orientation="vertical" className="mr-2 h-4" />
           <div className="ml-auto flex items-center space-x-4">
             <span className="text-sm text-muted-foreground">Welcome back, Shop Owner</span>
-            {/* <ThemeToggle /> */}
+            <ThemeToggle />
           </div>
         </header>
         <main className="flex-1 space-y-4 p-4 md:p-8 pt-6">{children}</main>

@@ -1,17 +1,26 @@
 'use server'
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || 'qwen/qwen3-235b-a22b-2507:free';
+
+const DEFAULT_SYSTEM_PROMPT = `
+You are an AI assistant for a Shopify store owner using RecoverMonkey.
+Your job is to help the shop owner manage their store, answer questions about abandoned carts, recovery rates, email campaigns, customer activity, and analytics.
+You have access to real-time store data via Supabase.
+Always be concise, accurate, and proactive in your suggestions.
+If you don't know the answer, say so honestly.
+The store name is: {store_name}.
+`;
+
+const OPENROUTER_SYSTEM_PROMPT = process.env.OPENROUTER_SYSTEM_PROMPT || DEFAULT_SYSTEM_PROMPT;
 
 export async function generateResponse(
   messages: Array<{ role: string; content: string }>,
   shopContext: { store_name: string },
   cartData?: { items: any[]; total_price: number }
 ): Promise<string> {
-  // Compose the system prompt with shop and cart context
-  const systemPrompt = `You are a helpful customer service chatbot for ${shopContext.store_name || 'this store'}. 
-    Help customers with questions about products, shipping, returns, and cart recovery. 
-    Be friendly, concise, and helpful. If they mention abandoned carts, offer to help recover them with a recovery email option.
-    ${cartData ? `The customer has items in their cart: ${JSON.stringify(cartData.items)} with a total of $${cartData.total_price}.` : ''}`;
+  // Compose the system prompt with shop context
+  const systemPrompt = OPENROUTER_SYSTEM_PROMPT.replace('{store_name}', shopContext.store_name || 'this store');
 
   const response = await fetch(OPENROUTER_API_URL, {
     method: 'POST',
@@ -22,7 +31,7 @@ export async function generateResponse(
       'X-Title': 'RecoverMonkey Chatbot',
     },
     body: JSON.stringify({
-      model: 'nousresearch/hermes-3-llama-3.1-405b:free',
+      model: OPENROUTER_MODEL,
       messages: [
         { role: 'system', content: systemPrompt },
         ...messages,

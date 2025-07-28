@@ -106,39 +106,36 @@ export function AIAssistantChatWindow({ onSendCommand }: { onSendCommand?: (comm
     setInput("")
     setIsLoading(true)
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      const res = await fetch("/api/assistant-query", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: input }),
+      });
+      const data = await res.json();
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: "assistant",
-        content: generateResponse(input),
+        content: data.answer || "Sorry, I couldn't get an answer.",
         timestamp: new Date(),
       }
       setMessages((prev) => [...prev, assistantMessage])
+    } catch (err) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 2).toString(),
+          type: "assistant",
+          content: "Sorry, there was an error contacting the assistant API.",
+          timestamp: new Date(),
+        },
+      ])
+    } finally {
       setIsLoading(false)
-    }, 1500)
+    }
   }
 
-  const generateResponse = (command: string): string => {
-    const lowerCommand = command.toLowerCase()
-    if (lowerCommand.includes("abandoned carts") && lowerCommand.includes("week")) {
-      return "📊 **Abandoned Carts This Week:**\n\n• Total: 47 carts\n• Value: $3,247.89\n• Top customer: Sarah Johnson ($89.99)\n• Most abandoned item: Wireless Headphones\n\nWould you like me to send recovery emails to these customers?"
-    }
-    if (lowerCommand.includes("recovery rate")) {
-      return "📈 **Your Recovery Performance:**\n\n• Overall recovery rate: 36%\n• This month: 38% (+2%)\n• Email recovery: 42%\n• SMS recovery: 28%\n\nYour performance is above average! The industry standard is around 30%."
-    }
-    if (lowerCommand.includes("send reminder")) {
-      return "✅ **Recovery Email Sent!**\n\nI've queued a personalized recovery email for the customer. The email will be sent within the next 5 minutes.\n\n**Email Details:**\n• Template: Standard Recovery\n• Discount: 10% off\n• Follow-up: Scheduled for 24 hours\n\nI'll notify you when the customer opens the email."
-    }
-    if (lowerCommand.includes("export") || lowerCommand.includes("csv")) {
-      return "📁 **Export Started:**\n\nI'm preparing your cart data export with the following:\n\n• All abandoned carts (last 30 days)\n• Customer information\n• Product details\n• Recovery status\n\nThe CSV file will be ready in 2-3 minutes. I'll send you a download link via email."
-    }
-    return (
-      'I understand you want help with: "' +
-      command +
-      "\"\n\nI can assist with:\n• Viewing abandoned cart data\n• Sending recovery emails\n• Analyzing performance metrics\n• Exporting data\n• Scheduling campaigns\n\nCould you be more specific about what you'd like to do?"
-    )
-  }
+  // Remove generateResponse and simulation logic
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -177,8 +174,8 @@ export function AIAssistantChatWindow({ onSendCommand }: { onSendCommand?: (comm
                     <div
               className={`max-w-[80%] rounded-xl p-3 shadow-sm text-sm ${
                 message.type === "user"
-                  ? "bg-primary text-primary-foreground rounded-br-none"
-                  : "bg-muted rounded-bl-none"
+                  ? "bg-green-500 text-black"
+                  : "bg-gray-100 text-gray-900 border border-gray-200"
               }`}
             >
               <div className="whitespace-pre-line">{message.content}</div>
