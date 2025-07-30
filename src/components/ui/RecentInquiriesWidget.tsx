@@ -55,16 +55,16 @@ export function RecentInquiriesWidget() {
         <div className="max-h-64 overflow-y-auto space-y-6">
           {inquiries.map((inquiry, idx) => (
             <div key={inquiry.id || idx} className="space-y-4 border-b last:border-b-0 pb-4 last:pb-0">
-              <div className="text-base font-medium mb-2">
-                {inquiry.full_query || inquiry.query_summary}
-              </div>
-              <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                <div><span className="font-semibold">Customer:</span> {inquiry.customer_email || "-"}</div>
-                <div><span className="font-semibold">Cart Value:</span> {inquiry.cart_value !== undefined && inquiry.cart_value !== null ? `$${inquiry.cart_value}` : "-"}</div>
-                <div><span className="font-semibold">Currency:</span> {inquiry.currency || "-"}</div>
-                <div><span className="font-semibold">Created:</span> {inquiry.created_at ? new Date(inquiry.created_at).toLocaleString() : "-"}</div>
-                <div><span className="font-semibold">Status:</span> <Badge variant="secondary">{inquiry.status}</Badge></div>
-              </div>
+          <div className="text-base font-medium mb-2">
+            {inquiry.full_query || inquiry.query_summary}
+          </div>
+          <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+            <div><span className="font-semibold">Customer:</span> {inquiry.customer_email || "-"}</div>
+            <div><span className="font-semibold">Cart Value:</span> {inquiry.cart_value !== undefined && inquiry.cart_value !== null ? `$${inquiry.cart_value}` : "-"}</div>
+            <div><span className="font-semibold">Currency:</span> {inquiry.currency || "-"}</div>
+            <div><span className="font-semibold">Created:</span> {inquiry.created_at ? new Date(inquiry.created_at).toLocaleString() : "-"}</div>
+            <div><span className="font-semibold">Status:</span> <Badge variant="secondary">{inquiry.status}</Badge></div>
+          </div>
             </div>
           ))}
         </div>
