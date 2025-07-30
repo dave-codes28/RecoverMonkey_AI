@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import supabase from '@/lib/supabaseClient';
+import { verifyShopifyWebhook } from '@/lib/shopify-hmac';
 
 // Function to process cart abandonment event
 async function processCartAbandonment(cartData: any) {
@@ -124,8 +125,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Empty request body' }, { status: 400 });
     }
 
-    // Skip HMAC verification for testing
-    console.log('[Shopify Webhook] Skipping HMAC verification for testing');
+    // Verify HMAC signature
+    const secret = process.env.SHOPIFY_WEBHOOK_SECRET;
+    if (!secret) {
+      console.error('[Shopify Webhook] ERROR: Missing SHOPIFY_WEBHOOK_SECRET in environment');
+      return NextResponse.json({ error: 'Webhook secret not configured' }, { status: 500 });
+    }
+
+    const isValidHmac = verifyShopifyWebhook(body, hmacHeader, secret);
+    if (!isValidHmac) {
+      console.error('[Shopify Webhook] ERROR: HMAC verification failed');
+      return NextResponse.json({ error: 'Invalid webhook signature' }, { status: 401 });
+    }
+
+    console.log('[Shopify Webhook] HMAC verification successful');
 
     // Parse the JSON body
     let webhookData;
