@@ -53,13 +53,22 @@ export function DashboardHome() {
       color: "bg-green-500/10 text-green-600 border-green-200/50"
     },
     {
-      title: "Emails Sent",
-      value: stats?.emailsSent?.toString() ?? "-",
-      change: "+23%",
+      title: "Recovery Value",
+      value: stats?.totalRecoveryValue !== undefined ? `$${stats.totalRecoveryValue.toLocaleString()}` : "-",
+      change: "+15%",
       changeType: "increase" as const,
-      icon: Mail,
-      description: "Recovery emails delivered",
-      color: "bg-purple-500/10 text-purple-600 border-purple-200/50"
+      icon: DollarSign,
+      description: "Total value recovered",
+      color: "bg-emerald-500/10 text-emerald-600 border-emerald-200/50"
+    },
+    {
+      title: "Recent Recoveries",
+      value: stats?.recentRecoveries?.toString() ?? "-",
+      change: "+5",
+      changeType: "increase" as const,
+      icon: Calendar,
+      description: "Last 7 days",
+      color: "bg-indigo-500/10 text-indigo-600 border-indigo-200/50"
     },
     {
       title: "Recovery Rate",
@@ -69,6 +78,15 @@ export function DashboardHome() {
       icon: Target,
       description: "Overall conversion rate",
       color: "bg-orange-500/10 text-orange-600 border-orange-200/50"
+    },
+    {
+      title: "Emails Sent",
+      value: stats?.emailsSent?.toString() ?? "-",
+      change: "+23%",
+      changeType: "increase" as const,
+      icon: Mail,
+      description: "Recovery emails delivered",
+      color: "bg-purple-500/10 text-purple-600 border-purple-200/50"
     },
   ];
 

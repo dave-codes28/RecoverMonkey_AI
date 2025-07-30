@@ -99,6 +99,116 @@ async function processCartAbandonment(cartData: any) {
   }
 }
 
+// Function to process order completion
+async function processOrderCompletion(orderData: any) {
+  try {
+    console.log('Processing order completion:', orderData);
+
+    const order = orderData;
+    const customer = order.customer || {};
+    const lineItems = order.line_items || [];
+
+    console.log('Order details:', {
+      orderId: order.id,
+      customerEmail: customer.email,
+      totalPrice: order.total_price,
+      lineItemsCount: lineItems.length
+    });
+
+    // Update customer information if we have it
+    if (customer.email) {
+      const customerData = {
+        shopify_customer_id: customer.id?.toString(),
+        email: customer.email,
+        name: `${customer.first_name || ''} ${customer.last_name || ''}`.trim(),
+        metadata: {
+          shopify_data: customer,
+          source: 'shopify_webhook',
+          last_order: order.id
+        }
+      };
+
+      // Upsert customer
+      const { data: customerResult, error: customerError } = await supabase
+        .from('customers')
+        .upsert([customerData], { onConflict: 'email' })
+        .select()
+        .single();
+
+      if (customerError) {
+        console.error('Error upserting customer:', customerError);
+      } else {
+        console.log('Customer updated:', customerResult);
+      }
+    }
+
+    // Find and mark related abandoned carts as recovered
+    const { data: abandonedCarts, error: cartsError } = await supabase
+      .from('carts')
+      .select('*')
+      .eq('email', customer.email)
+      .eq('status', 'abandoned');
+
+    if (cartsError) {
+      console.error('Error finding abandoned carts:', cartsError);
+      return false;
+    }
+
+    console.log(`Found ${abandonedCarts?.length || 0} abandoned carts for ${customer.email}`);
+
+    if (abandonedCarts && abandonedCarts.length > 0) {
+      // Mark all abandoned carts as recovered
+      const cartIds = abandonedCarts.map(cart => cart.id);
+      
+      const { data: updatedCarts, error: updateError } = await supabase
+        .from('carts')
+        .update({
+          status: 'recovered',
+          recovered_at: new Date().toISOString(),
+          recovered_order_id: order.id?.toString(),
+          metadata: {
+            ...abandonedCarts[0]?.metadata,
+            recovered_order: {
+              order_id: order.id,
+              order_total: order.total_price,
+              recovered_at: new Date().toISOString(),
+              source: 'shopify_webhook'
+            }
+          }
+        })
+        .in('id', cartIds)
+        .select();
+
+      if (updateError) {
+        console.error('Error marking carts as recovered:', updateError);
+        return false;
+      }
+
+      console.log(`Successfully marked ${updatedCarts?.length || 0} carts as recovered`);
+      
+      // Log the recovery event
+      const recoveryLog = {
+        order_id: order.id?.toString(),
+        customer_email: customer.email,
+        carts_recovered: cartIds.length,
+        order_total: parseFloat(order.total_price || '0'),
+        line_items: lineItems,
+        metadata: {
+          order_data: order,
+          source: 'shopify_webhook'
+        }
+      };
+
+      console.log('Recovery event logged:', recoveryLog);
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error processing order completion:', error);
+    return false;
+  }
+}
+
 export async function GET() {
   return NextResponse.json({ 
     message: 'Shopify webhook endpoint is active', 
@@ -182,14 +292,14 @@ export async function POST(req: NextRequest) {
         }
         break;
 
+      case 'orders/create':
+        console.log('[Shopify Webhook] Processing order creation...');
+        await processOrderCompletion(webhookData);
+        break;
+
       case 'checkouts/update':
         // Handle checkout updates
         console.log('Checkout updated:', webhookData);
-        break;
-
-      case 'orders/create':
-        // Handle new orders
-        console.log('Order created:', webhookData);
         break;
 
       default:

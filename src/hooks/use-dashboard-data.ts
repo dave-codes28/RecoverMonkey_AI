@@ -7,6 +7,8 @@ interface DashboardStats {
   recoveredCarts: number;
   emailsSent: number;
   recoveryRate: number;
+  totalRecoveryValue: number;
+  recentRecoveries: number;
 }
 
 interface RecentActivity {
@@ -17,6 +19,7 @@ interface RecentActivity {
   amount: string;
   time: string;
   avatar?: string;
+  orderId?: string;
 }
 
 export function useDashboardData() {
@@ -24,7 +27,9 @@ export function useDashboardData() {
     totalAbandonedCarts: 0,
     recoveredCarts: 0,
     emailsSent: 0,
-    recoveryRate: 0
+    recoveryRate: 0,
+    totalRecoveryValue: 0,
+    recentRecoveries: 0
   });
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,11 +52,12 @@ export function useDashboardData() {
 
       if (abandonedError) throw abandonedError;
 
-      // Fetch recovered carts
+      // Fetch recovered carts with more details
       const { data: recoveredCarts, error: recoveredError } = await supabase
         .from('carts')
         .select('*')
-        .eq('status', 'recovered');
+        .eq('status', 'recovered')
+        .order('recovered_at', { ascending: false });
 
       if (recoveredError) throw recoveredError;
 
@@ -67,18 +73,37 @@ export function useDashboardData() {
       const totalRecovered = recoveredCarts?.length || 0;
       const totalEmails = emailsSent?.length || 0;
       const recoveryRate = totalAbandoned > 0 ? Math.round((totalRecovered / totalAbandoned) * 100) : 0;
+      
+      // Calculate total recovery value
+      const totalRecoveryValue = recoveredCarts?.reduce((sum, cart) => {
+        return sum + (parseFloat(cart.total_price || '0') || 0);
+      }, 0) || 0;
+
+      // Calculate recent recoveries (last 7 days)
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const recentRecoveries = recoveredCarts?.filter(cart => {
+        if (!cart.recovered_at) return false;
+        return new Date(cart.recovered_at) > sevenDaysAgo;
+      }).length || 0;
 
       setStats({
         totalAbandonedCarts: totalAbandoned,
         recoveredCarts: totalRecovered,
         emailsSent: totalEmails,
-        recoveryRate
+        recoveryRate,
+        totalRecoveryValue,
+        recentRecoveries
       });
 
       // Create recent activity from recent carts
       const allCarts = [...(abandonedCarts || []), ...(recoveredCarts || [])];
       const recentCarts = allCarts
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .sort((a, b) => {
+          const dateA = a.recovered_at || a.created_at;
+          const dateB = b.recovered_at || b.created_at;
+          return new Date(dateB).getTime() - new Date(dateA).getTime();
+        })
         .slice(0, 5);
 
       const activityData: RecentActivity[] = recentCarts.map(cart => ({
@@ -87,8 +112,9 @@ export function useDashboardData() {
         customer: cart.email?.split('@')[0] || 'Unknown Customer',
         email: cart.email || 'no-email@example.com',
         amount: `$${cart.total_price || 0}`,
-        time: formatTimeAgo(cart.created_at),
-        avatar: undefined
+        time: formatTimeAgo(cart.recovered_at || cart.created_at),
+        avatar: undefined,
+        orderId: cart.recovered_order_id
       }));
 
       setRecentActivity(activityData);
@@ -102,18 +128,16 @@ export function useDashboardData() {
   }
 
   function formatTimeAgo(dateString: string): string {
+    if (typeof window === 'undefined') return ''; // Skip on server to avoid SSR mismatch
+    
     const now = new Date();
     const date = new Date(dateString);
-    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-
-    if (diffInMinutes < 1) return 'Just now';
-    if (diffInMinutes < 60) return `${diffInMinutes} minutes ago`;
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
     
-    const diffInHours = Math.floor(diffInMinutes / 60);
-    if (diffInHours < 24) return `${diffInHours} hours ago`;
-    
-    const diffInDays = Math.floor(diffInHours / 24);
-    return `${diffInDays} days ago`;
+    if (diffInSeconds < 60) return `${diffInSeconds} seconds ago`;
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   }
 
   return {
