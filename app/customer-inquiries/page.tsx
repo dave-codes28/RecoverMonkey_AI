@@ -27,6 +27,7 @@ const RESPONSE_TEMPLATES = [
 
 // Format time difference for display
 const formatTimeAgo = (dateString: string) => {
+  if (typeof window === 'undefined') return ''; // Skip on server to avoid SSR mismatch
   const now = new Date();
   const date = new Date(dateString);
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
@@ -108,7 +109,7 @@ const CustomerInquiriesSkeleton = () => (
 );
 
 export default function CustomerInquiriesPage() {
-  // --- State and Handlers (at the top) ---
+  // --- State and Handlers ---
   const [hydrated, setHydrated] = React.useState(false);
   React.useEffect(() => { setHydrated(true); }, []);
   const SHOP_ID = 'd5a79116-842f-4a4b-afd6-a4bb225119cf';
@@ -118,18 +119,20 @@ export default function CustomerInquiriesPage() {
   const [inquiries, setInquiries] = React.useState<Inquiry[]>([]);
   const [loadingInquiries, setLoadingInquiries] = React.useState(true);
   const [inquiriesError, setInquiriesError] = React.useState<string | null>(null);
-  // Fetch inquiries logic (reusable)
-  const fetchInquiries = React.useCallback(() => {
+  // Fetch inquiries logic
+  const fetchInquiries = React.useCallback(async () => {
     setLoadingInquiries(true);
-    fetch('/api/inquiries')
-      .then(res => res.json())
-      .then(data => {
-        console.log('Fetched inquiries:', data); // Debug log
-        setInquiries(data.inquiries || []);
-        setInquiriesError(data.error || null);
-      })
-      .catch(err => setInquiriesError(err.message || 'Failed to load inquiries'))
-      .finally(() => setLoadingInquiries(false));
+    try {
+      const res = await fetch('/api/inquiries');
+      const data = await res.json();
+      console.log('Fetched inquiries:', data);
+      setInquiries(data.inquiries || []);
+      setInquiriesError(data.error || null);
+    } catch (err) {
+      setInquiriesError(err instanceof Error ? err.message : 'Failed to load inquiries');
+    } finally {
+      setLoadingInquiries(false);
+    }
   }, []);
 
   React.useEffect(() => {
@@ -187,12 +190,9 @@ export default function CustomerInquiriesPage() {
     setIsSendingReply(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API call
-      // const success = await updateInquiryStatus(selectedInquiry.id, 'responded'); // This line was removed
-      if (true) { // Assuming updateInquiryStatus was removed, this will always be true for now
-        toast({ title: "Reply Sent", description: `Response sent to ${selectedInquiry.customer_email}.` });
-        setIsReplyDialogOpen(false);
-        setResponseMessage("");
-      } else throw new Error("Failed to update inquiry status.");
+      toast({ title: "Reply Sent", description: `Response sent to ${selectedInquiry.customer_email}.` });
+      setIsReplyDialogOpen(false);
+      setResponseMessage("");
     } catch (err) {
       toast({ title: "Error", description: `Failed to send reply. ${err instanceof Error ? err.message : ""}`, variant: "destructive" });
     } finally {
@@ -201,15 +201,13 @@ export default function CustomerInquiriesPage() {
   };
   const handleMarkAsResolved = async (inquiryId: string) => {
     try {
-      // const success = await updateInquiryStatus(inquiryId, 'resolved'); // This line was removed
-      if (true) toast({ title: "Inquiry Resolved", description: `Inquiry ${inquiryId} marked as resolved.` });
-      else throw new Error("Failed to mark inquiry as resolved.");
+      toast({ title: "Inquiry Resolved", description: `Inquiry ${inquiryId} marked as resolved.` });
     } catch (err) {
       toast({ title: "Error", description: `Failed to mark inquiry as resolved. ${err instanceof Error ? err.message : ""}`, variant: "destructive" });
     }
   };
   const handleSyncInquiries = async () => {
-    fetchInquiries();
+    await fetchInquiries();
     toast({ title: "Inquiries Synced", description: "Inquiry data has been refreshed." });
   };
   const handleAddFaq = async () => {
@@ -295,9 +293,7 @@ export default function CustomerInquiriesPage() {
           <Card className="border-destructive">
             <CardContent className="pt-6 flex flex-col items-center gap-4 text-destructive">
               <p>Error: {inquiriesError || faqsError}</p>
-              <Button onClick={() => { // refetchInquiries(); // This line was removed
-                // refetchFaqs(); // This line was removed
-              }} variant="destructive">
+              <Button onClick={() => { fetchInquiries(); refetchFaqs(); }} variant="destructive">
                 <RefreshCw className="mr-2 h-4 w-4" /> Retry
               </Button>
             </CardContent>
@@ -315,10 +311,7 @@ export default function CustomerInquiriesPage() {
             <h1 className="text-2xl font-bold tracking-tight">Customer Inquiries</h1>
             <p className="text-muted-foreground">View and manage customer inquiries for your shop.</p>
           </div>
-          {/* Add any action buttons here if needed */}
         </div>
-        {/* Stats (optional, if you have them) */}
-        {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4"> ... </div> */}
         {/* Inquiries Table */}
         <Card className="w-full">
           <CardHeader>
@@ -356,44 +349,14 @@ export default function CustomerInquiriesPage() {
               <div className="max-h-96 overflow-y-auto">
                 <Table className="table-fixed">
                   <TableHeader>
-                    <TableRow>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Summary</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
+                    <TableRow><TableHead>Email</TableHead><TableHead>Summary</TableHead><TableHead>Status</TableHead><TableHead>Date</TableHead><TableHead>Actions</TableHead></TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredInquiries.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={5} className="h-48 text-center">
-                          <div className="flex flex-col items-center gap-2">
-                            <Info className="h-12 w-12 text-muted-foreground/50" />
-                            <h3 className="font-semibold">No inquiries found</h3>
-                            <p className="text-muted-foreground">Try adjusting your filters or check back later.</p>
-                          </div>
-                        </TableCell>
-                      </TableRow>
+                      <TableRow><TableCell colSpan={5} className="h-48 text-center"><div className="flex flex-col items-center gap-2"><Info className="h-12 w-12 text-muted-foreground/50" /><h3 className="font-semibold">No inquiries found</h3><p className="text-muted-foreground">Try adjusting your filters or check back later.</p></div></TableCell></TableRow>
                     ) : (
                       filteredInquiries.map((inquiry) => (
-                        <TableRow key={inquiry.id} className="odd:bg-muted/50">
-                          {/* Added max-width and truncate classes to table cells */}
-                          <TableCell className="max-w-[200px] truncate align-top">{inquiry.customer_email}</TableCell>
-                          <TableCell className="max-w-[300px] truncate align-top">{inquiry.query_summary}</TableCell>
-                          <TableCell className="align-top">{inquiry.status}</TableCell>
-                          <TableCell className="align-top">{formatTimeAgo(inquiry.created_at)}</TableCell>
-                          <TableCell className="align-top">
-                            <div className="flex gap-2">
-                              <Button size="sm" onClick={() => { setSelectedInquiry(inquiry); setIsReplyDialogOpen(true); }} className="bg-green-600 hover:bg-green-700 text-white">
-                                Reply
-                              </Button>
-                              <Button size="sm" variant="outline" onClick={() => { setViewSummaryInquiry(inquiry); setIsViewSummaryDialogOpen(true); }} className="border-green-600 text-green-700">
-                                View Full Summary
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
+                        <TableRow key={inquiry.id} className="odd:bg-muted/50"><TableCell className="max-w-[200px] truncate align-top">{inquiry.customer_email}</TableCell><TableCell className="max-w-[300px] truncate align-top">{inquiry.query_summary}</TableCell><TableCell className="align-top">{inquiry.status}</TableCell><TableCell className="align-top">{formatTimeAgo(inquiry.created_at)}</TableCell><TableCell className="align-top"><div className="flex gap-2"><Button size="sm" onClick={() => { setSelectedInquiry(inquiry); setIsReplyDialogOpen(true); }} className="bg-green-600 hover:bg-green-700 text-white">Reply</Button><Button size="sm" variant="outline" onClick={() => { setViewSummaryInquiry(inquiry); setIsViewSummaryDialogOpen(true); }} className="border-green-600 text-green-700">View Full Summary</Button></div></TableCell></TableRow>
                       ))
                     )}
                   </TableBody>
@@ -409,7 +372,6 @@ export default function CustomerInquiriesPage() {
             <CardDescription>Manage frequently asked questions for your shop.</CardDescription>
           </CardHeader>
           <CardContent>
-            {/* FAQ toolbar and table, similar structure as above */}
             <div className="flex items-center justify-between mb-4">
               <div>
                 <Input
@@ -434,39 +396,14 @@ export default function CustomerInquiriesPage() {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Question</TableHead>
-                    <TableHead>Answer</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
+                  <TableRow><TableHead>Question</TableHead><TableHead>Answer</TableHead><TableHead>Category</TableHead><TableHead className="text-right">Actions</TableHead></TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredFaqs.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={4} className="h-32 text-center">
-                        <div className="flex flex-col items-center gap-2">
-                          <Info className="h-12 w-12 text-muted-foreground/50" />
-                          <h3 className="font-semibold">No FAQs found</h3>
-                          <p className="text-muted-foreground">Try adjusting your search or add a new FAQ.</p>
-                        </div>
-                      </TableCell>
-                    </TableRow>
+                    <TableRow><TableCell colSpan={4} className="h-32 text-center"><div className="flex flex-col items-center gap-2"><Info className="h-12 w-12 text-muted-foreground/50" /><h3 className="font-semibold">No FAQs found</h3><p className="text-muted-foreground">Try adjusting your search or add a new FAQ.</p></div></TableCell></TableRow>
                   ) : (
                     filteredFaqs.map((faq) => (
-                      <TableRow key={faq.id} className="odd:bg-muted/50">
-                        <TableCell className="max-w-[200px] truncate">{faq.question}</TableCell>
-                        <TableCell className="max-w-[300px] truncate">{faq.answer}</TableCell>
-                        <TableCell>{faq.category}</TableCell>
-                        <TableCell className="text-right">
-                          <Button variant="ghost" className="h-8 w-8 p-0 border-green-600 text-green-700" onClick={() => { setSelectedFaq(faq); setNewFaqQuestion(faq.question); setNewFaqAnswer(faq.answer); setNewFaqCategory(faq.category); setIsEditFaqDialogOpen(true); }}>
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" className="h-8 w-8 p-0 text-destructive border-green-600 text-green-700" onClick={() => handleDeleteFaq(faq.id)} disabled={isDeletingFaq}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
+                      <TableRow key={faq.id} className="odd:bg-muted/50"><TableCell className="max-w-[200px] truncate">{faq.question}</TableCell><TableCell className="max-w-[300px] truncate">{faq.answer}</TableCell><TableCell>{faq.category}</TableCell><TableCell className="text-right"><Button variant="ghost" className="h-8 w-8 p-0 border-green-600 text-green-700" onClick={() => { setSelectedFaq(faq); setNewFaqQuestion(faq.question); setNewFaqAnswer(faq.answer); setNewFaqCategory(faq.category); setIsEditFaqDialogOpen(true); }}><Edit className="h-4 w-4" /></Button><Button variant="ghost" className="h-8 w-8 p-0 text-destructive border-green-600 text-green-700" onClick={() => handleDeleteFaq(faq.id)} disabled={isDeletingFaq}><Trash2 className="h-4 w-4" /></Button></TableCell></TableRow>
                     ))
                   )}
                 </TableBody>
@@ -527,7 +464,6 @@ export default function CustomerInquiriesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      {/* View Full Summary Dialog */}
       <Dialog open={isViewSummaryDialogOpen} onOpenChange={setIsViewSummaryDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -555,11 +491,11 @@ export default function CustomerInquiriesPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Upload FAQ File</DialogTitle>
-            <DialogDescription>Upload a PDF or DOCX file to bulk import FAQs.</DialogDescription>
+            <DialogDescription>Upload a text file (.txt) to bulk import FAQs. Format: Q: Question? A: Answer Category: Category Name</DialogDescription>
           </DialogHeader>
           <input
             type="file"
-            accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            accept=".txt,text/plain"
             onChange={e => setFaqUploadFile(e.target.files?.[0] || null)}
             disabled={isUploadingFaq}
             className="mb-4"
@@ -575,7 +511,7 @@ export default function CustomerInquiriesPage() {
                 const formData = new FormData();
                 formData.append('file', faqUploadFile);
                 try {
-                  const res = await fetch('/api/upload-faq-file', { method: 'POST', body: formData });
+                  const res = await fetch(`/api/upload-faq-file?shop_id=${SHOP_ID}`, { method: 'POST', body: formData });
                   const data = await res.json();
                   if (res.ok && data.success) {
                     toast({ title: "Upload Successful", description: data.message });
