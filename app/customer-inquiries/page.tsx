@@ -18,94 +18,94 @@ import type { FAQ } from "@/types/supabase";
 
 // Response templates for replies
 const RESPONSE_TEMPLATES = [
-  "Yes, we can accommodate that!",
-  "Please clarify your request.",
-  "Thank you for your inquiry. We'll get back to you soon.",
-  "This is a common question. Please see our FAQ section.",
-  "We appreciate your feedback!"
+  "Yes, we can accommodate that!",
+  "Please clarify your request.",
+  "Thank you for your inquiry. We'll get back to you soon.",
+  "This is a common question. Please see our FAQ section.",
+  "We appreciate your feedback!"
 ];
 
 // Format time difference for display
 const formatTimeAgo = (dateString: string) => {
   if (typeof window === 'undefined') return ''; // Skip on server to avoid SSR mismatch
-  const now = new Date();
-  const date = new Date(dateString);
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  const now = new Date();
+  const date = new Date(dateString);
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
   if (diffInSeconds < 60) return `${diffInSeconds} seconds ago`;
   if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
   if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 };
 
 // Skeleton component for loading state
 const CustomerInquiriesSkeleton = () => (
-  <div className="flex flex-col gap-8">
-    <div className="flex items-center justify-between">
-      <div>
-        <Skeleton className="h-8 w-64 rounded-md" />
-        <Skeleton className="mt-2 h-4 w-80 rounded-md" />
-      </div>
+  <div className="flex flex-col gap-8">
+    <div className="flex items-center justify-between">
+      <div>
+        <Skeleton className="h-8 w-64 rounded-md" />
+        <Skeleton className="mt-2 h-4 w-80 rounded-md" />
+      </div>
       <Skeleton className="h-10 w-36 rounded-md" />
-    </div>
-    <Card className="p-4 flex flex-col md:flex-row gap-4 justify-between">
+    </div>
+    <Card className="p-4 flex flex-col md:flex-row gap-4 justify-between">
       {[...Array(4)].map((_, i) => (
         <div key={i} className="flex flex-col gap-2">
-          <Skeleton className="h-6 w-24" />
-          <Skeleton className="h-4 w-32" />
-        </div>
+        <Skeleton className="h-6 w-24" />
+        <Skeleton className="h-4 w-32" />
+      </div>
       ))}
-    </Card>
-    <Card>
-      <CardHeader>
-        <Skeleton className="h-6 w-48 rounded-md" />
+    </Card>
+    <Card>
+      <CardHeader>
+        <Skeleton className="h-6 w-48 rounded-md" />
+        <Skeleton className="mt-2 h-4 w-72 rounded-md" />
+        <div className="flex items-center gap-4 pt-4">
+          <Skeleton className="h-10 flex-1 rounded-md" />
+          <Skeleton className="h-10 w-[120px] rounded-md" />
+          <Skeleton className="h-10 w-[100px] rounded-md" />
+        </div>
+      </CardHeader>
+      <CardContent className="p-0">
+        <div className="p-6 space-y-4">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="flex items-center gap-4">
+              <Skeleton className="h-4 w-1/5" />
+              <Skeleton className="h-4 w-2/5" />
+              <Skeleton className="h-4 w-[80px]" />
+              <Skeleton className="h-4 w-[100px]" />
+              <Skeleton className="h-6 w-[80px] rounded-full" />
+              <Skeleton className="h-8 w-[60px] ml-auto" />
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+    <Card>
+      <CardHeader>
+          <Skeleton className="h-6 w-48 rounded-md" />
         <Skeleton className="mt-2 h-4 w-72 rounded-md" />
         <div className="flex items-center gap-4 pt-4">
           <Skeleton className="h-10 flex-1 rounded-md" />
           <Skeleton className="h-10 w-[120px] rounded-md" />
-          <Skeleton className="h-10 w-[100px] rounded-md" />
-        </div>
-      </CardHeader>
-      <CardContent className="p-0">
-        <div className="p-6 space-y-4">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="flex items-center gap-4">
-              <Skeleton className="h-4 w-1/5" />
-              <Skeleton className="h-4 w-2/5" />
-              <Skeleton className="h-4 w-[80px]" />
-              <Skeleton className="h-4 w-[100px]" />
-              <Skeleton className="h-6 w-[80px] rounded-full" />
-              <Skeleton className="h-8 w-[60px] ml-auto" />
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-    <Card>
-      <CardHeader>
-        <Skeleton className="h-6 w-48 rounded-md" />
-        <Skeleton className="mt-2 h-4 w-72 rounded-md" />
-        <div className="flex items-center gap-4 pt-4">
-          <Skeleton className="h-10 flex-1 rounded-md" />
-          <Skeleton className="h-10 w-[120px] rounded-md" />
-        </div>
-      </CardHeader>
-      <CardContent className="p-0">
-        <div className="p-6 space-y-4">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="flex items-center gap-4">
-              <Skeleton className="h-4 w-1/4" />
-              <Skeleton className="h-4 w-2/4" />
-              <Skeleton className="h-4 w-1/6" />
-              <div className="flex gap-2 ml-auto">
-                <Skeleton className="h-8 w-[60px]" />
-                <Skeleton className="h-8 w-[60px]" />
-              </div>
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  </div>
+        </div>
+      </CardHeader>
+      <CardContent className="p-0">
+        <div className="p-6 space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="flex items-center gap-4">
+              <Skeleton className="h-4 w-1/4" />
+              <Skeleton className="h-4 w-2/4" />
+              <Skeleton className="h-4 w-1/6" />
+              <div className="flex gap-2 ml-auto">
+                <Skeleton className="h-8 w-[60px]" />
+                <Skeleton className="h-8 w-[60px]" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  </div>
 );
 
 export default function CustomerInquiriesPage() {
@@ -114,8 +114,8 @@ export default function CustomerInquiriesPage() {
   React.useEffect(() => { setHydrated(true); }, []);
   const SHOP_ID = 'd5a79116-842f-4a4b-afd6-a4bb225119cf';
   const { faqs, loading: loadingFaqs, error: faqsError, refetch: refetchFaqs, addFaq, updateFaq, deleteFaq } = useFaqs(SHOP_ID);
-  const { toast } = useToast();
-  // State for Inquiries
+  const { toast } = useToast();
+  // State for Inquiries
   const [inquiries, setInquiries] = React.useState<Inquiry[]>([]);
   const [loadingInquiries, setLoadingInquiries] = React.useState(true);
   const [inquiriesError, setInquiriesError] = React.useState<string | null>(null);
@@ -126,8 +126,8 @@ export default function CustomerInquiriesPage() {
       const res = await fetch('/api/inquiries');
       const data = await res.json();
       console.log('Fetched inquiries:', data);
-      setInquiries(data.inquiries || []);
-      setInquiriesError(data.error || null);
+        setInquiries(data.inquiries || []);
+        setInquiriesError(data.error || null);
     } catch (err) {
       setInquiriesError(err instanceof Error ? err.message : 'Failed to load inquiries');
     } finally {
@@ -141,16 +141,16 @@ export default function CustomerInquiriesPage() {
   React.useEffect(() => {
     console.log('faqs from hook:', faqs);
   }, [faqs]);
-  // State for FAQs
-  const [faqSearchTerm, setFaqSearchTerm] = React.useState("");
-  const [isAddFaqDialogOpen, setIsAddFaqDialogOpen] = React.useState(false);
-  const [isEditFaqDialogOpen, setIsEditFaqDialogOpen] = React.useState(false);
-  const [selectedFaq, setSelectedFaq] = React.useState<FAQ | null>(null);
-  const [newFaqQuestion, setNewFaqQuestion] = React.useState("");
-  const [newFaqAnswer, setNewFaqAnswer] = React.useState("");
-  const [newFaqCategory, setNewFaqCategory] = React.useState("");
-  const [isSavingFaq, setIsSavingFaq] = React.useState(false);
-  const [isDeletingFaq, setIsDeletingFaq] = React.useState(false);
+  // State for FAQs
+  const [faqSearchTerm, setFaqSearchTerm] = React.useState("");
+  const [isAddFaqDialogOpen, setIsAddFaqDialogOpen] = React.useState(false);
+  const [isEditFaqDialogOpen, setIsEditFaqDialogOpen] = React.useState(false);
+  const [selectedFaq, setSelectedFaq] = React.useState<FAQ | null>(null);
+  const [newFaqQuestion, setNewFaqQuestion] = React.useState("");
+  const [newFaqAnswer, setNewFaqAnswer] = React.useState("");
+  const [newFaqCategory, setNewFaqCategory] = React.useState("");
+  const [isSavingFaq, setIsSavingFaq] = React.useState(false);
+  const [isDeletingFaq, setIsDeletingFaq] = React.useState(false);
   // Add missing state for inquiries search and filter
   const [inquirySearchTerm, setInquirySearchTerm] = React.useState("");
   const [inquiryStatusFilter, setInquiryStatusFilter] = React.useState("all");
@@ -166,43 +166,43 @@ export default function CustomerInquiriesPage() {
   const [isUploadFaqDialogOpen, setIsUploadFaqDialogOpen] = React.useState(false);
   const [isUploadingFaq, setIsUploadingFaq] = React.useState(false);
   const [faqUploadFile, setFaqUploadFile] = React.useState<File | null>(null);
-  // Filtered Inquiries
-  const filteredInquiries = inquiries.filter((inquiry) => {
-    const matchesSearch =
+  // Filtered Inquiries
+  const filteredInquiries = inquiries.filter((inquiry) => {
+    const matchesSearch =
       inquirySearchTerm === "" ||
       (inquiry.customer_email?.toLowerCase() || "").includes(inquirySearchTerm.toLowerCase()) ||
       (inquiry.query_summary?.toLowerCase() || "").includes(inquirySearchTerm.toLowerCase());
-    const matchesStatus = inquiryStatusFilter === "all" || inquiry.status === inquiryStatusFilter;
-    return matchesSearch && matchesStatus;
-  });
-  // Filtered FAQs
-  const filteredFaqs = faqs.filter((faq) =>
-    faq.question.toLowerCase().includes(faqSearchTerm.toLowerCase()) ||
-    faq.answer.toLowerCase().includes(faqSearchTerm.toLowerCase()) ||
-    faq.category.toLowerCase().includes(faqSearchTerm.toLowerCase())
-  );
+    const matchesStatus = inquiryStatusFilter === "all" || inquiry.status === inquiryStatusFilter;
+    return matchesSearch && matchesStatus;
+  });
+  // Filtered FAQs
+  const filteredFaqs = faqs.filter((faq) =>
+    faq.question.toLowerCase().includes(faqSearchTerm.toLowerCase()) ||
+    faq.answer.toLowerCase().includes(faqSearchTerm.toLowerCase()) ||
+    faq.category.toLowerCase().includes(faqSearchTerm.toLowerCase())
+  );
   // Handlers
-  const handleReplyToInquiry = async () => {
-    if (!selectedInquiry || !responseMessage) {
+  const handleReplyToInquiry = async () => {
+    if (!selectedInquiry || !responseMessage) {
       toast({ title: "Error", description: "Please enter a response message.", variant: "destructive" });
-      return;
-    }
-    setIsSendingReply(true);
-    try {
+      return;
+    }
+    setIsSendingReply(true);
+    try {
       await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API call
-      toast({ title: "Reply Sent", description: `Response sent to ${selectedInquiry.customer_email}.` });
-      setIsReplyDialogOpen(false);
-      setResponseMessage("");
-    } catch (err) {
+        toast({ title: "Reply Sent", description: `Response sent to ${selectedInquiry.customer_email}.` });
+        setIsReplyDialogOpen(false);
+        setResponseMessage("");
+    } catch (err) {
       toast({ title: "Error", description: `Failed to send reply. ${err instanceof Error ? err.message : ""}`, variant: "destructive" });
-    } finally {
-      setIsSendingReply(false);
-    }
-  };
-  const handleMarkAsResolved = async (inquiryId: string) => {
-    try {
+    } finally {
+      setIsSendingReply(false);
+    }
+  };
+  const handleMarkAsResolved = async (inquiryId: string) => {
+    try {
       toast({ title: "Inquiry Resolved", description: `Inquiry ${inquiryId} marked as resolved.` });
-    } catch (err) {
+    } catch (err) {
       toast({ title: "Error", description: `Failed to mark inquiry as resolved. ${err instanceof Error ? err.message : ""}`, variant: "destructive" });
     }
   };
@@ -210,34 +210,34 @@ export default function CustomerInquiriesPage() {
     await fetchInquiries();
     toast({ title: "Inquiries Synced", description: "Inquiry data has been refreshed." });
   };
-  const handleAddFaq = async () => {
-    if (!newFaqQuestion || !newFaqAnswer || !newFaqCategory) {
+  const handleAddFaq = async () => {
+    if (!newFaqQuestion || !newFaqAnswer || !newFaqCategory) {
       toast({ title: "Error", description: "Please fill in all FAQ fields.", variant: "destructive" });
-      return;
-    }
-    setIsSavingFaq(true);
-    try {
+      return;
+    }
+    setIsSavingFaq(true);
+    try {
       const success = await addFaq({ question: newFaqQuestion, answer: newFaqAnswer, category: newFaqCategory, shop_id: SHOP_ID });
-      if (success) {
+      if (success) {
         toast({ title: "FAQ Added", description: "New FAQ has been added successfully." });
-        setIsAddFaqDialogOpen(false);
-        setNewFaqQuestion("");
-        setNewFaqAnswer("");
-        setNewFaqCategory("");
+        setIsAddFaqDialogOpen(false);
+        setNewFaqQuestion("");
+        setNewFaqAnswer("");
+        setNewFaqCategory("");
       } else throw new Error("Failed to add FAQ.");
-    } catch (err) {
+    } catch (err) {
       toast({ title: "Error", description: `Failed to add FAQ. ${err instanceof Error ? err.message : ""}` , variant: "destructive" });
-    } finally {
-      setIsSavingFaq(false);
-    }
-  };
-  const handleUpdateFaq = async () => {
-    if (!selectedFaq || !newFaqQuestion || !newFaqAnswer || !newFaqCategory) {
+    } finally {
+      setIsSavingFaq(false);
+    }
+  };
+  const handleUpdateFaq = async () => {
+    if (!selectedFaq || !newFaqQuestion || !newFaqAnswer || !newFaqCategory) {
       toast({ title: "Error", description: "Please fill in all FAQ fields.", variant: "destructive" });
-      return;
-    }
-    setIsSavingFaq(true);
-    try {
+      return;
+    }
+    setIsSavingFaq(true);
+    try {
       const success = await updateFaq({
         ...selectedFaq,
         question: newFaqQuestion,
@@ -247,33 +247,33 @@ export default function CustomerInquiriesPage() {
         updated_at: new Date().toISOString(),
         shop_id: SHOP_ID,
       });
-      if (success) {
+      if (success) {
         toast({ title: "FAQ Updated", description: "FAQ has been updated successfully." });
-        setIsEditFaqDialogOpen(false);
-        setSelectedFaq(null);
-        setNewFaqQuestion("");
-        setNewFaqAnswer("");
-        setNewFaqCategory("");
+        setIsEditFaqDialogOpen(false);
+        setSelectedFaq(null);
+        setNewFaqQuestion("");
+        setNewFaqAnswer("");
+        setNewFaqCategory("");
       } else throw new Error("Failed to update FAQ.");
-    } catch (err) {
+    } catch (err) {
       toast({ title: "Error", description: `Failed to update FAQ. ${err instanceof Error ? err.message : ""}`, variant: "destructive" });
-    } finally {
-      setIsSavingFaq(false);
-    }
-  };
-  const handleDeleteFaq = async (faqId: string) => {
-    setIsDeletingFaq(true);
-    try {
-      const success = await deleteFaq(faqId);
+    } finally {
+      setIsSavingFaq(false);
+    }
+  };
+  const handleDeleteFaq = async (faqId: string) => {
+    setIsDeletingFaq(true);
+    try {
+      const success = await deleteFaq(faqId);
       if (success) toast({ title: "FAQ Deleted", description: "FAQ has been deleted successfully." });
       else throw new Error("Failed to delete FAQ.");
-    } catch (err) {
+    } catch (err) {
       toast({ title: "Error", description: `Failed to delete FAQ. ${err instanceof Error ? err.message : ""}`, variant: "destructive" });
-    } finally {
-      setIsDeletingFaq(false);
-    }
-  };
-  // Loading state
+    } finally {
+      setIsDeletingFaq(false);
+    }
+  };
+  // Loading state
   if (!hydrated || loadingInquiries || loadingFaqs) {
     return (
       <DashboardLayout>
@@ -281,93 +281,93 @@ export default function CustomerInquiriesPage() {
       </DashboardLayout>
     );
   }
-  // Error state
-  if (inquiriesError || faqsError) {
-    return (
-      <DashboardLayout>
-        <div className="flex flex-col gap-8 p-8">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Customer Inquiries</h1>
-            <p className="text-muted-foreground">Error loading data. Please try again.</p>
-          </div>
-          <Card className="border-destructive">
-            <CardContent className="pt-6 flex flex-col items-center gap-4 text-destructive">
-              <p>Error: {inquiriesError || faqsError}</p>
+  // Error state
+  if (inquiriesError || faqsError) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col gap-8 p-8">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Customer Inquiries</h1>
+            <p className="text-muted-foreground">Error loading data. Please try again.</p>
+          </div>
+          <Card className="border-destructive">
+            <CardContent className="pt-6 flex flex-col items-center gap-4 text-destructive">
+              <p>Error: {inquiriesError || faqsError}</p>
               <Button onClick={() => { fetchInquiries(); refetchFaqs(); }} variant="destructive">
                 <RefreshCw className="mr-2 h-4 w-4" /> Retry
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </DashboardLayout>
-    );
-  }
-  return (
-    <DashboardLayout>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </DashboardLayout>
+    );
+  }
+  return (
+    <DashboardLayout>
       <div className="flex flex-col gap-8">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
+          <div className="flex items-center justify-between">
+            <div>
             <h1 className="text-2xl font-bold tracking-tight">Customer Inquiries</h1>
             <p className="text-muted-foreground">View and manage customer inquiries for your shop.</p>
-          </div>
-        </div>
-        {/* Inquiries Table */}
+            </div>
+          </div>
+          {/* Inquiries Table */}
         <Card className="w-full">
-          <CardHeader>
+            <CardHeader>
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 w-full">
               <div className="min-w-0">
                 <CardTitle>Inquiries</CardTitle>
                 <CardDescription>All customer inquiries for your shop.</CardDescription>
               </div>
               <div className="flex gap-2 flex-shrink-0">
-                <Input
+                  <Input
                   placeholder="Search inquiries..."
-                  value={inquirySearchTerm}
+                    value={inquirySearchTerm}
                   onChange={e => setInquirySearchTerm(e.target.value)}
                   className="w-48"
-                />
-                <Select value={inquiryStatusFilter} onValueChange={setInquiryStatusFilter}>
+                  />
+                <Select value={inquiryStatusFilter} onValueChange={setInquiryStatusFilter}>
                   <SelectTrigger className="w-32">
                     <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent>
+                  </SelectTrigger>
+                  <SelectContent>
                     <SelectItem value="all">All</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="responded">Responded</SelectItem>
-                    <SelectItem value="resolved">Resolved</SelectItem>
-                  </SelectContent>
-                </Select>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="responded">Responded</SelectItem>
+                    <SelectItem value="resolved">Resolved</SelectItem>
+                  </SelectContent>
+                </Select>
                 <Button variant="outline" onClick={handleSyncInquiries} className="border-green-600 text-green-700">
                   <RefreshCw className="h-4 w-4 mr-2" /> Refresh
-                </Button>
+                </Button>
               </div>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
               <div className="max-h-96 overflow-y-auto">
                 <Table className="table-fixed">
-                  <TableHeader>
+                  <TableHeader>
                     <TableRow><TableHead>Email</TableHead><TableHead>Summary</TableHead><TableHead>Status</TableHead><TableHead>Date</TableHead><TableHead>Actions</TableHead></TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredInquiries.length === 0 ? (
+                  </TableHeader>
+                  <TableBody>
+                    {filteredInquiries.length === 0 ? (
                       <TableRow><TableCell colSpan={5} className="h-48 text-center"><div className="flex flex-col items-center gap-2"><Info className="h-12 w-12 text-muted-foreground/50" /><h3 className="font-semibold">No inquiries found</h3><p className="text-muted-foreground">Try adjusting your filters or check back later.</p></div></TableCell></TableRow>
-                    ) : (
-                      filteredInquiries.map((inquiry) => (
+                    ) : (
+                      filteredInquiries.map((inquiry) => (
                         <TableRow key={inquiry.id} className="odd:bg-muted/50"><TableCell className="max-w-[200px] truncate align-top">{inquiry.customer_email}</TableCell><TableCell className="max-w-[300px] truncate align-top">{inquiry.query_summary}</TableCell><TableCell className="align-top">{inquiry.status}</TableCell><TableCell className="align-top">{formatTimeAgo(inquiry.created_at)}</TableCell><TableCell className="align-top"><div className="flex gap-2"><Button size="sm" onClick={() => { setSelectedInquiry(inquiry); setIsReplyDialogOpen(true); }} className="bg-green-600 hover:bg-green-700 text-white">Reply</Button><Button size="sm" variant="outline" onClick={() => { setViewSummaryInquiry(inquiry); setIsViewSummaryDialogOpen(true); }} className="border-green-600 text-green-700">View Full Summary</Button></div></TableCell></TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+              </div>
+            </CardContent>
+          </Card>
         {/* FAQ Section */}
-        <Card>
-          <CardHeader>
+          <Card>
+            <CardHeader>
             <CardTitle>FAQ Editor</CardTitle>
             <CardDescription>Manage frequently asked questions for your shop.</CardDescription>
           </CardHeader>

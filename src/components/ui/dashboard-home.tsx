@@ -28,6 +28,7 @@ import {
 import { useDashboardData } from "@/hooks/use-dashboard-data";
 import { RecentInquiriesWidget } from "@/components/ui/RecentInquiriesWidget";
 import { FloatingAssistantWidget } from "@/components/ui/FloatingAssistantWidget";
+import { ShopifyDiscoveryWidget } from "@/components/ui/ShopifyDiscoveryWidget";
 
 export function DashboardHome() {
   const { stats, recentActivity, loading, error, refetch } = useDashboardData();
@@ -178,6 +179,9 @@ export function DashboardHome() {
           </Card>
         ))}
       </div>
+
+        {/* Shopify Discovery Widget */}
+        <ShopifyDiscoveryWidget />
 
         {/* Enhanced Content Grid */}
         <div className="grid gap-8 lg:grid-cols-2">
